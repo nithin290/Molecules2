@@ -2,12 +2,21 @@ import pygame
 import sys
 from math import *
 
+
+def print_grid():
+    for i in range(rows):
+        for j in range(cols):
+            print(grid[i][j].noAtoms, end=" ")
+        print()
+    print()
+
+
 # Initialization of Pygame
 pygame.init()
 
-width = 400
-height = 400
-display = pygame.display.set_mode((width, height))
+window_width = 800
+window_height = 400
+display = pygame.display.set_mode((window_width, window_height))
 clock = pygame.time.Clock()
 
 # Colors
@@ -38,8 +47,11 @@ for i in range(noPlayers):
 
 d = cell_side // 2 - 2
 
-cols = int(width // cell_side)
-rows = int(height // cell_side)
+cols = int(window_width // cell_side)
+rows = int(window_height // cell_side)
+
+print(cols)
+print(rows)
 
 grid = []
 
@@ -51,7 +63,7 @@ def close():
 
 
 # Class for Each Spot in Grid
-class Spot():
+class Spot:
     def __init__(self):
         self.color = border
         self.neighbors = []
@@ -79,25 +91,25 @@ def initializeGrid():
     for i in range(noPlayers):
         players.append(playerColor[i])
 
-    grid = [[] for _ in range(cols)]
-    for i in range(cols):
-        for j in range(rows):
-            newObj = Spot()
-            grid[i].append(newObj)
-    for i in range(cols):
-        for j in range(rows):
+    grid = [[] for _ in range(rows)]
+    for i in range(rows):
+        for j in range(cols):
+            grid[i].append(Spot())
+    for i in range(rows):
+        for j in range(cols):
             grid[i][j].addNeighbors(i, j)
+    print()
 
 
 # Draw the Grid in Pygame Window
 def drawGrid(currentIndex):
     r = 0
     c = 0
-    for i in range(width // cell_side):
+    for i in range(window_width // cell_side):
         r += cell_side
         c += cell_side
-        pygame.draw.line(display, players[currentIndex], (c, 0), (c, height))
-        pygame.draw.line(display, players[currentIndex], (0, r), (width, r))
+        pygame.draw.line(display, players[currentIndex], (c, 0), (c, window_height))
+        pygame.draw.line(display, players[currentIndex], (0, r), (window_width, r))
 
 
 # Draw the Present Situation of Grid
@@ -105,30 +117,31 @@ def showPresentGrid(vibrate=1):
     r = -cell_side
     c = -cell_side
     padding = 2
-    for i in range(cols):
+    print_grid()
+    for i in range(rows):
         r += cell_side
         c = -cell_side
-        for j in range(rows):
+        for j in range(cols):
             c += cell_side
             if grid[i][j].noAtoms == 0:
                 grid[i][j].color = border
             elif grid[i][j].noAtoms == 1:
                 pygame.draw.ellipse(display, grid[i][j].color,
-                                    (r + cell_side / 2 - d / 2 + vibrate, c + cell_side / 2 - d / 2, d, d))
+                                    (c + cell_side / 2 - d / 2, r + cell_side / 2 - d / 2 + vibrate, d, d))
             elif grid[i][j].noAtoms == 2:
-                pygame.draw.ellipse(display, grid[i][j].color, (r + 5, c + cell_side / 2 - d / 2 - vibrate, d, d))
+                pygame.draw.ellipse(display, grid[i][j].color, (c + cell_side / 2 - d / 2 - vibrate, r + 5, d, d))
                 pygame.draw.ellipse(display, grid[i][j].color,
-                                    (r + d / 2 + cell_side / 2 - d / 2 + vibrate, c + cell_side / 2 - d / 2, d, d))
+                                    (c + cell_side / 2 - d / 2, r + d / 2 + cell_side / 2 - d / 2 + vibrate, d, d))
             elif grid[i][j].noAtoms == 3:
                 angle = 90
-                x = r + (d / 2) * cos(radians(angle)) + cell_side / 2 - d / 2
-                y = c + (d / 2) * sin(radians(angle)) + cell_side / 2 - d / 2
+                y = r + (d / 2) * cos(radians(angle)) + cell_side / 2 - d / 2
+                x = c + (d / 2) * sin(radians(angle)) + cell_side / 2 - d / 2
                 pygame.draw.ellipse(display, grid[i][j].color, (x - vibrate, y, d, d))
-                x = r + (d / 2) * cos(radians(angle + 90)) + cell_side / 2 - d / 2
-                y = c + (d / 2) * sin(radians(angle + 90)) + 5
+                y = r + (d / 2) * cos(radians(angle + 90)) + cell_side / 2 - d / 2
+                x = c + (d / 2) * sin(radians(angle + 90)) + 5
                 pygame.draw.ellipse(display, grid[i][j].color, (x + vibrate, y, d, d))
-                x = r + (d / 2) * cos(radians(angle - 90)) + cell_side / 2 - d / 2
-                y = c + (d / 2) * sin(radians(angle - 90)) + 5
+                y = r + (d / 2) * cos(radians(angle - 90)) + cell_side / 2 - d / 2
+                x = c + (d / 2) * sin(radians(angle - 90)) + 5
                 pygame.draw.ellipse(display, grid[i][j].color, (x - vibrate, y, d, d))
 
     pygame.display.update()
@@ -159,8 +172,8 @@ def isPlayerInGame():
     playerScore = []
     for i in range(noPlayers):
         playerScore.append(0)
-    for i in range(cols):
-        for j in range(rows):
+    for i in range(rows):
+        for j in range(cols):
             for k in range(noPlayers):
                 if grid[i][j].color == players[k]:
                     playerScore[k] += grid[i][j].noAtoms
@@ -182,8 +195,8 @@ def gameOver(playerIndex):
         text = font.render("Player %d Won!" % (playerIndex + 1), True, white)
         text2 = font.render("Press \'r\' to Reset!", True, white)
 
-        display.blit(text, (width / 3, height / 3))
-        display.blit(text2, (width / 3, height / 2))
+        display.blit(text, (window_width / 3, window_height / 3))
+        display.blit(text2, (window_width / 3, window_height / 2))
 
         pygame.display.update()
         clock.tick(60)
@@ -222,8 +235,8 @@ def gameLoop():
                     close()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
-                i = int(x / cell_side)
-                j = int(y / cell_side)
+                i = int(y / cell_side)
+                j = int(x / cell_side)
                 if grid[i][j].color == players[currentPlayer] or grid[i][j].color == border:
                     turns += 1
                     addAtom(i, j, players[currentPlayer])
@@ -238,7 +251,7 @@ def gameLoop():
         vibrate *= -1
 
         drawGrid(currentPlayer)
-        showPresentGrid(vibrate)
+        showPresentGrid(int(vibrate))
 
         pygame.display.update()
 
