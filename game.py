@@ -6,11 +6,14 @@ from Grid import Grid
 # Initialization of Pygame
 pygame.init()
 
-window_width = 400
-window_height = 800
+width = 500
+height = 500
 
-grid_window_width = 300
-grid_window_height = 500
+window_width = max(300, width)
+window_height = max(400, width)
+
+grid_window_width = window_width - 100
+grid_window_height = window_height - 200
 
 padding_v = 50
 padding_h = 50
@@ -84,6 +87,16 @@ def drawGrid(currentIndex):
         pygame.draw.line(display, playerColor[currentIndex], (padding_h + 0, padding_v + r),
                          (padding_h + grid_window_width, padding_v + r))
         r += cell_side
+
+    player_indicator_height = min(grid_window_height, 50)
+    player_indicator_width = min(grid_window_width, 200)
+    pygame.draw.rect(display, playerColor[currentIndex],
+                     (padding_h + (grid_window_width - player_indicator_width) / 2, padding_v * 2 + grid_window_height,
+                      player_indicator_width, player_indicator_height))
+
+    text = font.render(f'Player: {currentIndex}', True, [0, 0, 0])
+    display.blit(text, (50 + padding_h + (grid_window_width - player_indicator_width) / 2,
+                        7 + padding_v * 2 + grid_window_height, player_indicator_width, player_indicator_height))
 
 
 # Draw the Present Situation of Grid
@@ -212,6 +225,9 @@ def gameLoop():
                     close()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
+                if x < padding_h or y < padding_v or x > padding_h + grid_window_width or \
+                        y > padding_v + grid_window_height:
+                    break
                 x_grid = x - padding_h
                 y_grid = y - padding_v
 
