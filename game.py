@@ -1,6 +1,7 @@
 import pygame
 import sys
 from math import *
+from Cell import Cell
 
 
 def print_grid():
@@ -62,24 +63,6 @@ def close():
     sys.exit()
 
 
-# Class for Each Spot in Grid
-class Spot:
-    def __init__(self):
-        self.color = border
-        self.neighbors = []
-        self.noAtoms = 0
-
-    def addNeighbors(self, i, j):
-        if i > 0:
-            self.neighbors.append(grid[i - 1][j])
-        if i < rows - 1:
-            self.neighbors.append(grid[i + 1][j])
-        if j < cols - 1:
-            self.neighbors.append(grid[i][j + 1])
-        if j > 0:
-            self.neighbors.append(grid[i][j - 1])
-
-
 # Initializing the Grid with "Empty or 0"
 def initializeGrid():
     global grid, score, players
@@ -94,10 +77,10 @@ def initializeGrid():
     grid = [[] for _ in range(rows)]
     for i in range(rows):
         for j in range(cols):
-            grid[i].append(Spot())
+            grid[i].append(Cell(border))
     for i in range(rows):
         for j in range(cols):
-            grid[i][j].addNeighbors(i, j)
+            grid[i][j].addNeighbors(grid, rows, cols, i, j)
     print()
 
 
@@ -117,7 +100,6 @@ def showPresentGrid(vibrate=1):
     r = -cell_side
     c = -cell_side
     padding = 2
-    print_grid()
     for i in range(rows):
         r += cell_side
         c = -cell_side
