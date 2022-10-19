@@ -15,7 +15,7 @@ def print_grid():
 # Initialization of Pygame
 pygame.init()
 
-window_width = 800
+window_width = 400
 window_height = 400
 display = pygame.display.set_mode((window_width, window_height))
 clock = pygame.time.Clock()
@@ -43,6 +43,7 @@ for i in range(noPlayers):
     score.append(0)
 
 players = []
+player_in = [True for _ in range(noPlayers)]
 for i in range(noPlayers):
     players.append(playerColor[i])
 
@@ -91,8 +92,9 @@ def drawGrid(currentIndex):
     for i in range(window_width // cell_side):
         r += cell_side
         c += cell_side
-        pygame.draw.line(display, players[currentIndex], (c, 0), (c, window_height))
-        pygame.draw.line(display, players[currentIndex], (0, r), (window_width, r))
+        # TODO make the border color change with the player turn
+        pygame.draw.line(display, [255, 255, 255], (c, 0), (c, window_height))
+        pygame.draw.line(display, [255, 255, 255], (0, r), (window_width, r))
 
 
 # Draw the Present Situation of Grid
@@ -151,14 +153,15 @@ def overFlow(cell, color):
 # Checking if Any Player has WON!
 def isPlayerInGame():
     global score
-    playerScore = []
-    for i in range(noPlayers):
-        playerScore.append(0)
+    playerScore = [0 for _ in range(noPlayers)]
     for i in range(rows):
         for j in range(cols):
             for k in range(noPlayers):
                 if grid[i][j].color == players[k]:
                     playerScore[k] += grid[i][j].noAtoms
+    for i, score in enumerate(playerScore):
+        if score == 0:
+            player_in[i] = False
     score = playerScore[:]
 
 
@@ -221,12 +224,17 @@ def gameLoop():
                 j = int(x / cell_side)
                 if grid[i][j].color == players[currentPlayer] or grid[i][j].color == border:
                     turns += 1
+                    temp_currentPlayer = currentPlayer
+                    for _ in range(noPlayers):
+                        if player_in[(_ + temp_currentPlayer) % noPlayers]:
+                            break
+                        currentPlayer = (currentPlayer + 1) % noPlayers
                     addAtom(i, j, players[currentPlayer])
-                    currentPlayer += 1
-                    if currentPlayer >= noPlayers:
-                        currentPlayer = 0
+                    currentPlayer = (currentPlayer + 1) % noPlayers
                 if turns >= noPlayers:
                     isPlayerInGame()
+                print(player_in)
+                print(currentPlayer)
 
         display.fill(background)
         # Vibrate the Atoms in their Cells
