@@ -2,6 +2,7 @@ import pygame
 import sys
 from math import *
 from Grid import Grid
+from Player import Player
 
 # Initialization of Pygame
 pygame.init()
@@ -30,8 +31,23 @@ violet = (0, 0, 255)
 yellow = (255, 255, 255)
 green = (0, 255, 0)
 
-playerColor = [red, green]
-noPlayers = len(playerColor)
+players = [Player([255, 0, 0], "LynX"), Player([0, 0, 255], "Prometheus"), Player([0, 255, 0], "Green"), Player([255, 255, 255], "White")]
+noPlayers = len(players)
+for i in range(noPlayers):
+    if i < noPlayers-1:
+        players[i].next_player = players[i + 1].id
+    else:
+        players[i].next_player = players[0].id
+for i in range(noPlayers-1, -1, -1):
+    if i > 0:
+        players[i].prev_player = players[i - 1].id
+    else:
+        players[i].prev_player = players[noPlayers - 1].id
+print(players)
+
+players_playing = set()
+for player in players:
+    players_playing.add(player)
 
 font = pygame.font.SysFont("Times New Roman", 30)
 
@@ -42,14 +58,6 @@ pygame.display.set_caption("Molecules %d Player" % noPlayers)
 score = []
 for i in range(noPlayers):
     score.append(0)
-
-players_playing = set()
-
-for i in range(noPlayers):
-    players_playing.add(i)
-
-for i in range(noPlayers):
-    playerColor.append(playerColor[i])
 
 d = cell_side // 2 - 2
 
@@ -65,11 +73,8 @@ def close():
 
 # Initializing the Grid with "Empty or 0"
 def initializeGrid():
-    global grid, score, playerColor
-    score = []
-    for i in range(noPlayers):
-        score.append(0)
-
+    global grid, score, players
+    score = [0 for _ in range(noPlayers)]
     grid = Grid(rows, cols)
     print()
 
@@ -79,24 +84,25 @@ def drawGrid(currentIndex):
     r = 0
     c = 0
     for i in range(grid_window_width // cell_side + 1):
-        pygame.draw.line(display, playerColor[currentIndex], (padding_h + c, padding_v + 0),
+        pygame.draw.line(display, players[currentIndex].color, (padding_h + c, padding_v + 0),
                          (padding_h + c, padding_v + grid_window_height))
         c += cell_side
 
     for i in range(grid_window_height // cell_side + 1):
-        pygame.draw.line(display, playerColor[currentIndex], (padding_h + 0, padding_v + r),
+        pygame.draw.line(display, players[currentIndex].color, (padding_h + 0, padding_v + r),
                          (padding_h + grid_window_width, padding_v + r))
         r += cell_side
 
     player_indicator_height = min(grid_window_height, 50)
-    player_indicator_width = min(grid_window_width, 200)
-    pygame.draw.rect(display, playerColor[currentIndex],
+    player_indicator_width = min(grid_window_width, 300)
+    pygame.draw.rect(display, players[currentIndex].color,
                      (padding_h + (grid_window_width - player_indicator_width) / 2, padding_v * 2 + grid_window_height,
                       player_indicator_width, player_indicator_height))
 
-    text = font.render(f'Player: {currentIndex}', True, [0, 0, 0])
-    display.blit(text, (50 + padding_h + (grid_window_width - player_indicator_width) / 2,
-                        7 + padding_v * 2 + grid_window_height, player_indicator_width, player_indicator_height))
+    text = font.render(f"{players[currentIndex].name}'s turn", True, [0, 0, 0])
+    textRect = text.get_rect()
+    textRect.center = (window_width // 2, padding_v * 2 + grid_window_height + player_indicator_height // 2)
+    display.blit(text, textRect)
 
 
 # Draw the Present Situation of Grid
@@ -160,16 +166,23 @@ def overFlow(cell, color):
 def isPlayerInGame():
     print('remove')
     global score
-    playerScore = [0 for _ in range(noPlayers)]
-    for i in range(rows):
-        for j in range(cols):
+    playerScore = [0 for p in players]
+    for row in range(rows):
+        for col in range(cols):
             for k in range(noPlayers):
-                if grid.matrix[i][j].color == playerColor[k]:
-                    # playerScore[k] += grid.matrix[i][j].noAtoms
+                if grid.matrix[row][col].color == players[k].color:
+                    # playerScore[k] += grid.matrix[row][col].noAtoms
                     playerScore[k] += 1
     for i, score in enumerate(playerScore):
-        if score == 0 and i in players_playing:
-            players_playing.remove(i)
+        if score == 0 and players[i] in players_playing:
+            players_playing.remove(players[i])
+            if players[players[i].next_player] in players_playing:
+                players[players[i].prev_player].next_player = players[i].next_player
+            if players[players[i].prev_player] in players_playing:
+                players[players[i].next_player].prev_player = players[i].prev_player
+    print(players)
+    print(players_playing)
+
     score = playerScore[:]
 
 
@@ -185,7 +198,7 @@ def gameOver(playerIndex):
                 if event.key == pygame.K_r:
                     gameLoop()
 
-        text = font.render("Player %d Won!" % (playerIndex + 1), True, white)
+        text = font.render(f"{players[playerIndex].name} Won!", True, white)
         text2 = font.render("Press \'r\' to Reset!", True, white)
 
         display.blit(text, (window_width / 3, window_height / 3))
@@ -216,6 +229,8 @@ def gameLoop():
     turns = 0
     currentPlayer = 0
 
+
+
     while loop:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -238,28 +253,18 @@ def gameLoop():
                 print(f'x`: {x_grid}, y`: {y_grid}')
 
                 print(f'grid  :{grid.matrix[i][j].color}')
-                print(f'player:{playerColor[currentPlayer]}')
+                print(f'player:{players[currentPlayer].color}')
 
-                if grid.matrix[i][j].color == playerColor[currentPlayer] or grid.matrix[i][j].color == border:
+                if grid.matrix[i][j].color == players[currentPlayer].color or grid.matrix[i][j].color == border:
 
                     turns += 1
 
-                    addAtom(i, j, playerColor[currentPlayer])
+                    addAtom(i, j, players[currentPlayer].color)
                     if turns >= noPlayers:
                         isPlayerInGame()
-                    print(players_playing)
-                    flag = False
-                    for i, player in enumerate(players_playing):
-                        print(player)
-                        if player == currentPlayer:
-                            flag = True
-                            if i == len(players_playing) - 1:
-                                currentPlayer = 0
-                        elif flag:
-                            currentPlayer = player
-                            break
+                    currentPlayer = players[currentPlayer].next_player
 
-                # print('remove')
+                print(f'cp: {currentPlayer}')
 
         display.fill(background)
 
