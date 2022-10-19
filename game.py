@@ -48,8 +48,6 @@ d = cell_side // 2 - 2
 cols = int(window_width // cell_side)
 rows = int(window_height // cell_side)
 
-grid = []
-
 
 # Quit or Close the Game Window
 def close():
@@ -85,7 +83,7 @@ def drawGrid(currentIndex):
 
 
 # Draw the Present Situation of Grid
-def showPresentGrid(vibrate=1):
+def showPresentGrid():
     r = -cell_side
     c = -cell_side
     padding = 2
@@ -98,22 +96,22 @@ def showPresentGrid(vibrate=1):
                 grid.matrix[i][j].color = border
             elif grid.matrix[i][j].noAtoms == 1:
                 pygame.draw.ellipse(display, grid.matrix[i][j].color,
-                                    (c + cell_side / 2 - d / 2, r + cell_side / 2 - d / 2 + vibrate * grid.matrix[i][j].noAtoms, d, d))
+                                    (c + cell_side / 2 - d / 2, r + cell_side / 2 - d / 2 + grid.matrix[i][j].vibrate(), d, d))
             elif grid.matrix[i][j].noAtoms == 2:
-                pygame.draw.ellipse(display, grid.matrix[i][j].color, (c + cell_side / 2 - d / 2 - vibrate * grid.matrix[i][j].noAtoms, r + 5, d, d))
+                pygame.draw.ellipse(display, grid.matrix[i][j].color, (c + cell_side / 2 - d / 2 - grid.matrix[i][j].vibrate(), r + 5, d, d))
                 pygame.draw.ellipse(display, grid.matrix[i][j].color,
-                                    (c + cell_side / 2 - d / 2, r + d / 2 + cell_side / 2 - d / 2 + vibrate * grid.matrix[i][j].noAtoms, d, d))
+                                    (c + cell_side / 2 - d / 2, r + d / 2 + cell_side / 2 - d / 2 + grid.matrix[i][j].vibrate(), d, d))
             elif grid.matrix[i][j].noAtoms == 3:
                 angle = 90
                 y = r + (d / 2) * cos(radians(angle)) + cell_side / 2 - d / 2
                 x = c + (d / 2) * sin(radians(angle)) + cell_side / 2 - d / 2
-                pygame.draw.ellipse(display, grid.matrix[i][j].color, (x - vibrate * grid.matrix[i][j].noAtoms, y, d, d))
+                pygame.draw.ellipse(display, grid.matrix[i][j].color, (x - grid.matrix[i][j].vibrate(), y, d, d))
                 y = r + (d / 2) * cos(radians(angle + 90)) + cell_side / 2 - d / 2
                 x = c + (d / 2) * sin(radians(angle + 90)) + 5
-                pygame.draw.ellipse(display, grid.matrix[i][j].color, (x + vibrate * grid.matrix[i][j].noAtoms, y, d, d))
+                pygame.draw.ellipse(display, grid.matrix[i][j].color, (x + grid.matrix[i][j].vibrate(), y, d, d))
                 y = r + (d / 2) * cos(radians(angle - 90)) + cell_side / 2 - d / 2
                 x = c + (d / 2) * sin(radians(angle - 90)) + 5
-                pygame.draw.ellipse(display, grid.matrix[i][j].color, (x - vibrate * grid.matrix[i][j].noAtoms, y, d, d))
+                pygame.draw.ellipse(display, grid.matrix[i][j].color, (x - grid.matrix[i][j].vibrate(), y, d, d))
 
     pygame.display.update()
 
@@ -191,14 +189,12 @@ def checkWon():
 
 # Main Loop
 def gameLoop():
+
     initializeGrid()
+
     loop = True
-
     turns = 0
-
     currentPlayer = 0
-
-    vibrate = .25
 
     while loop:
         for event in pygame.event.get():
@@ -238,11 +234,8 @@ def gameLoop():
 
         display.fill(background)
 
-        # Vibrate the Atoms in their Cells
-        vibrate *= -1
-
         drawGrid(currentPlayer)
-        showPresentGrid(vibrate)
+        showPresentGrid()
 
         pygame.display.update()
 
