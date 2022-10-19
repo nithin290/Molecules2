@@ -3,12 +3,18 @@ import sys
 from math import *
 from Grid import Grid
 
-
 # Initialization of Pygame
 pygame.init()
 
 window_width = 400
-window_height = 400
+window_height = 800
+
+grid_window_width = 300
+grid_window_height = 500
+
+padding_v = 50
+padding_h = 50
+
 display = pygame.display.set_mode((window_width, window_height))
 clock = pygame.time.Clock()
 
@@ -21,12 +27,12 @@ violet = (0, 0, 255)
 yellow = (255, 255, 255)
 green = (0, 255, 0)
 
-playerColor = [red, green, violet, yellow]
+playerColor = [red, green]
+noPlayers = len(playerColor)
 
 font = pygame.font.SysFont("Times New Roman", 30)
 
 cell_side = 50
-noPlayers = 4
 
 pygame.display.set_caption("Molecules %d Player" % noPlayers)
 
@@ -34,19 +40,18 @@ score = []
 for i in range(noPlayers):
     score.append(0)
 
-players = []
 players_playing = set()
 
 for i in range(noPlayers):
     players_playing.add(i)
 
 for i in range(noPlayers):
-    players.append(playerColor[i])
+    playerColor.append(playerColor[i])
 
 d = cell_side // 2 - 2
 
-cols = int(window_width // cell_side)
-rows = int(window_height // cell_side)
+cols = int(grid_window_width // cell_side)
+rows = int(grid_window_height // cell_side)
 
 
 # Quit or Close the Game Window
@@ -57,14 +62,10 @@ def close():
 
 # Initializing the Grid with "Empty or 0"
 def initializeGrid():
-    global grid, score, players
+    global grid, score, playerColor
     score = []
     for i in range(noPlayers):
         score.append(0)
-
-    players = []
-    for i in range(noPlayers):
-        players.append(playerColor[i])
 
     grid = Grid(rows, cols)
     print()
@@ -74,12 +75,15 @@ def initializeGrid():
 def drawGrid(currentIndex):
     r = 0
     c = 0
-    for i in range(window_width // cell_side):
-        r += cell_side
+    for i in range(grid_window_width // cell_side + 1):
+        pygame.draw.line(display, playerColor[currentIndex], (padding_h + c, padding_v + 0),
+                         (padding_h + c, padding_v + grid_window_height))
         c += cell_side
-        # TODO make the border color change with the player turn
-        pygame.draw.line(display, [255, 255, 255], (c, 0), (c, window_height))
-        pygame.draw.line(display, [255, 255, 255], (0, r), (window_width, r))
+
+    for i in range(grid_window_height // cell_side + 1):
+        pygame.draw.line(display, playerColor[currentIndex], (padding_h + 0, padding_v + r),
+                         (padding_h + grid_window_width, padding_v + r))
+        r += cell_side
 
 
 # Draw the Present Situation of Grid
@@ -96,21 +100,25 @@ def showPresentGrid():
                 grid.matrix[i][j].color = border
             elif grid.matrix[i][j].noAtoms == 1:
                 pygame.draw.ellipse(display, grid.matrix[i][j].color,
-                                    (c + cell_side / 2 - d / 2, r + cell_side / 2 - d / 2 + grid.matrix[i][j].vibrate(), d, d))
+                                    (padding_h + c + cell_side / 2 - d / 2,
+                                     padding_v + r + cell_side / 2 - d / 2 + grid.matrix[i][j].vibrate(), d, d))
             elif grid.matrix[i][j].noAtoms == 2:
-                pygame.draw.ellipse(display, grid.matrix[i][j].color, (c + cell_side / 2 - d / 2 - grid.matrix[i][j].vibrate(), r + 5, d, d))
                 pygame.draw.ellipse(display, grid.matrix[i][j].color,
-                                    (c + cell_side / 2 - d / 2, r + d / 2 + cell_side / 2 - d / 2 + grid.matrix[i][j].vibrate(), d, d))
+                                    (padding_h + c + cell_side / 2 - d / 2 - grid.matrix[i][j].vibrate(),
+                                     padding_v + r + 5, d, d))
+                pygame.draw.ellipse(display, grid.matrix[i][j].color,
+                                    (padding_h + c + cell_side / 2 - d / 2,
+                                     padding_v + r + d / 2 + cell_side / 2 - d / 2 + grid.matrix[i][j].vibrate(), d, d))
             elif grid.matrix[i][j].noAtoms == 3:
                 angle = 90
-                y = r + (d / 2) * cos(radians(angle)) + cell_side / 2 - d / 2
-                x = c + (d / 2) * sin(radians(angle)) + cell_side / 2 - d / 2
+                y = padding_v + r + (d / 2) * cos(radians(angle)) + cell_side / 2 - d / 2
+                x = padding_h + c + (d / 2) * sin(radians(angle)) + cell_side / 2 - d / 2
                 pygame.draw.ellipse(display, grid.matrix[i][j].color, (x - grid.matrix[i][j].vibrate(), y, d, d))
-                y = r + (d / 2) * cos(radians(angle + 90)) + cell_side / 2 - d / 2
-                x = c + (d / 2) * sin(radians(angle + 90)) + 5
+                y = padding_v + r + (d / 2) * cos(radians(angle + 90)) + cell_side / 2 - d / 2
+                x = padding_h + c + (d / 2) * sin(radians(angle + 90)) + 5
                 pygame.draw.ellipse(display, grid.matrix[i][j].color, (x + grid.matrix[i][j].vibrate(), y, d, d))
-                y = r + (d / 2) * cos(radians(angle - 90)) + cell_side / 2 - d / 2
-                x = c + (d / 2) * sin(radians(angle - 90)) + 5
+                y = padding_v + r + (d / 2) * cos(radians(angle - 90)) + cell_side / 2 - d / 2
+                x = padding_h + c + (d / 2) * sin(radians(angle - 90)) + 5
                 pygame.draw.ellipse(display, grid.matrix[i][j].color, (x - grid.matrix[i][j].vibrate(), y, d, d))
 
     pygame.display.update()
@@ -143,7 +151,7 @@ def isPlayerInGame():
     for i in range(rows):
         for j in range(cols):
             for k in range(noPlayers):
-                if grid.matrix[i][j].color == players[k]:
+                if grid.matrix[i][j].color == playerColor[k]:
                     # playerScore[k] += grid.matrix[i][j].noAtoms
                     playerScore[k] += 1
     for i, score in enumerate(playerScore):
@@ -189,7 +197,6 @@ def checkWon():
 
 # Main Loop
 def gameLoop():
-
     initializeGrid()
 
     loop = True
@@ -205,17 +212,23 @@ def gameLoop():
                     close()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
-                i = int(y / cell_side)
-                j = int(x / cell_side)
+                x_grid = x - padding_h
+                y_grid = y - padding_v
+
+                i = int(y_grid / cell_side)
+                j = int(x_grid / cell_side)
+
+                print(f'x: {x}, y: {y}')
+                print(f'x`: {x_grid}, y`: {y_grid}')
 
                 print(f'grid  :{grid.matrix[i][j].color}')
-                print(f'player:{players[currentPlayer]}')
+                print(f'player:{playerColor[currentPlayer]}')
 
-                if grid.matrix[i][j].color == players[currentPlayer] or grid.matrix[i][j].color == border:
+                if grid.matrix[i][j].color == playerColor[currentPlayer] or grid.matrix[i][j].color == border:
 
                     turns += 1
 
-                    addAtom(i, j, players[currentPlayer])
+                    addAtom(i, j, playerColor[currentPlayer])
                     if turns >= noPlayers:
                         isPlayerInGame()
                     print(players_playing)
