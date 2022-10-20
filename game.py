@@ -143,7 +143,7 @@ def showPresentGrid(grid):
 
 # Increase the Atom when Clicked
 def addAtom(i, j, player):
-    # global grid_cpy
+    global grid
     # grid_cpy = copy.deepcopy(grid)
     grid.matrix[i][j].add_atoms()
     grid.matrix[i][j].color = player.color
@@ -152,8 +152,16 @@ def addAtom(i, j, player):
     if grid.matrix[i][j].noAtoms >= len(grid.matrix[i][j].neighbors):
         # print(f'cell lmt: {grid.matrix[i][j].type}')
         if not overFlow_manager(grid.matrix[i][j], player):
-            gameOver(player.id)
+
+            grid = Grid(rows, cols)
+            for row in grid.matrix:
+                for col in row:
+                    col.noAtoms = col.type
+                    col.color = player.color
+            return False
+
     showPresentGrid(grid)
+    return True
 
 
 def check_inf_condition(player):
@@ -165,25 +173,17 @@ def check_inf_condition(player):
 
 
 def overFlow_manager(cell, player):
-    # all_cells = set()
     q = queue.Queue()
     q.put(cell)
-    # all_cells.add(cell)
     while not q.empty():
-        # print(f'atoms: {cell.noAtoms}')
-        # print(f'queue: {queue_values(q)}')
         if check_inf_condition(player):
             return False
-        # if len(all_cells) == rows * cols:
-        #     break
         c = q.get()
-        # all_cells.remove(c)
         cells = overFlow(c, player)
         print(f'overflow_manager: cells : {cells}')
         if len(cells) > 0:
             for c in cells:
                 q.put(c)
-                # all_cells.add(c)
 
     return True
 
@@ -276,6 +276,7 @@ def gameLoop():
     loop = True
     turns = 0
     currentPlayer = 0
+    add_successful = True
 
     while loop:
         for event in pygame.event.get():
@@ -305,17 +306,22 @@ def gameLoop():
 
                     turns += 1
 
-                    addAtom(i, j, players[currentPlayer])
+                    add_successful = addAtom(i, j, players[currentPlayer])
+                    if not add_successful:
+                        break
                     if turns >= noPlayers:
                         isPlayerInGame()
                     currentPlayer = players[currentPlayer].next_player
 
                 # print(f'gameLoop: cp: {currentPlayer}')
 
+        # redrawing the grid again
         display.fill(background)
-
         drawGrid(currentPlayer)
         showPresentGrid(grid)
+
+        if not add_successful:
+            gameOver(player.id)
 
         pygame.display.update()
 
