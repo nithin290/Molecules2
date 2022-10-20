@@ -1,15 +1,11 @@
 import queue
-from queue import Queue
 
 import pygame
 import sys
 from math import *
 
-import pylab as p
-
 from Grid import Grid
 from Player import Player
-import copy
 
 # Initialization of Pygame
 pygame.init()
@@ -49,7 +45,6 @@ for i in range(noPlayers - 1, -1, -1):
         players[i].prev_player = players[i - 1].id
     else:
         players[i].prev_player = players[noPlayers - 1].id
-# print(players)
 
 players_playing = set()
 for player in players:
@@ -80,7 +75,6 @@ def initializeGrid():
     global grid, score, players
     score = [0 for _ in range(noPlayers)]
     grid = Grid(rows, cols)
-    # print(grid)
 
 
 # Draw the Grid in Pygame Window
@@ -153,7 +147,7 @@ def addAtom(i, j, player):
     # grid_cpy = copy.deepcopy(grid)
     grid.matrix[i][j].add_atoms()
     grid.matrix[i][j].color = player.color
-    print(f'atoms add[{i},{j}]: {grid.matrix[i][j].noAtoms}')
+    print(f'addAtom: [{i},{j}]: {grid.matrix[i][j].noAtoms}')
 
     if grid.matrix[i][j].noAtoms >= len(grid.matrix[i][j].neighbors):
         # print(f'cell lmt: {grid.matrix[i][j].type}')
@@ -163,7 +157,6 @@ def addAtom(i, j, player):
 
 
 def check_inf_condition(player):
-    # print(grid.print_grid())
     for row in grid.matrix:
         for col in row:
             if not col.color == player.color:
@@ -186,7 +179,7 @@ def overFlow_manager(cell, player):
         c = q.get()
         # all_cells.remove(c)
         cells = overFlow(c, player)
-        print(f'cells : {cells}')
+        print(f'overflow_manager: cells : {cells}')
         if len(cells) > 0:
             for c in cells:
                 q.put(c)
@@ -198,9 +191,7 @@ def overFlow_manager(cell, player):
 def queue_values(q):
     l = []
     while not q.empty:
-        a = q.get()
-        print(a)
-        l.append(a)
+        l.append(q.get())
 
     for i in l:
         q.put(i)
@@ -216,7 +207,6 @@ def overFlow(cell, player):
         cell_neighbor.add_atoms()
         cell_neighbor.color = player.color
         if cell_neighbor.noAtoms > cell_neighbor.type:
-            print(cell_neighbor)
             cells.append(cell_neighbor)
 
     return cells
@@ -224,7 +214,7 @@ def overFlow(cell, player):
 
 # Checking if Any Player has WON!
 def isPlayerInGame():
-    # print('remove')
+    # print(f'isPlayerInGame')
     global score
     playerScore = [0 for p in players]
     for row in range(rows):
@@ -240,8 +230,6 @@ def isPlayerInGame():
                 players[players[i].prev_player].next_player = players[i].next_player
             if players[players[i].prev_player] in players_playing:
                 players[players[i].next_player].prev_player = players[i].prev_player
-    # print(players)
-    # print(players_playing)
 
     score = playerScore[:]
 
@@ -307,11 +295,11 @@ def gameLoop():
                 i = int(y_grid / cell_side)
                 j = int(x_grid / cell_side)
 
-                # print(f'x: {x}, y: {y}')
-                # print(f'x`: {x_grid}, y`: {y_grid}')
+                # print(f'gameLoop: x: {x}, y: {y}')
+                # print(f'gameLoop: x`: {x_grid}, y`: {y_grid}')
 
-                # print(f'grid  :{grid.matrix[i][j].color}')
-                # print(f'player:{players[currentPlayer].color}')
+                # print(f'gameLoop: grid  :{grid.matrix[i][j].color}')
+                # print(f'gameLoop: player:{players[currentPlayer].color}')
 
                 if grid.matrix[i][j].color == players[currentPlayer].color or grid.matrix[i][j].color == border:
 
@@ -322,7 +310,7 @@ def gameLoop():
                         isPlayerInGame()
                     currentPlayer = players[currentPlayer].next_player
 
-                # print(f'cp: {currentPlayer}')
+                # print(f'gameLoop: cp: {currentPlayer}')
 
         display.fill(background)
 
