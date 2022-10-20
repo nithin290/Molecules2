@@ -46,7 +46,7 @@ for i in range(noPlayers - 1, -1, -1):
         players[i].prev_player = players[i - 1].id
     else:
         players[i].prev_player = players[noPlayers - 1].id
-print(players)
+# print(players)
 
 players_playing = set()
 for player in players:
@@ -77,7 +77,7 @@ def initializeGrid():
     global grid, score, players
     score = [0 for _ in range(noPlayers)]
     grid = Grid(rows, cols)
-    print(grid)
+    # print(grid)
 
 
 # Draw the Grid in Pygame Window
@@ -146,31 +146,47 @@ def showPresentGrid(grid):
 
 # Increase the Atom when Clicked
 def addAtom(i, j, player):
-    global grid_cpy
-    grid_cpy = copy.deepcopy(grid)
+    # global grid_cpy
+    # grid_cpy = copy.deepcopy(grid)
     grid.matrix[i][j].add_atoms()
     grid.matrix[i][j].color = player.color
+    print(f'atoms add: {grid.matrix[i][j].noAtoms}')
 
     if grid.matrix[i][j].noAtoms >= len(grid.matrix[i][j].neighbors):
-        overFlow_manager(grid.matrix[i][j], player)
+        if not overFlow_manager(grid.matrix[i][j], player):
+            gameOver(player.id)
     showPresentGrid(grid)
 
 
+def check_inf_condition():
+    color = grid.matrix[0][0]
+    for row in grid.matrix:
+        for col in row:
+            if not col.color == color:
+                return False
+    return True
+
+
 def overFlow_manager(cell, player):
-    all_cells = set()
+    # all_cells = set()
     q = queue.Queue()
     q.put(cell)
-    all_cells.add(cell)
+    # all_cells.add(cell)
     while not q.empty():
-        if len(all_cells) == rows * cols:
-            break
+        print(f'atoms: {cell.noAtoms}')
+        if check_inf_condition():
+            return False
+        # if len(all_cells) == rows * cols:
+        #     break
         c = q.get()
-        all_cells.remove(c)
+        # all_cells.remove(c)
         cells = overFlow(c, player)
         if len(cells) > 0:
             for c in cells:
                 q.put(c)
-                all_cells.add(c)
+                # all_cells.add(c)
+
+    return True
 
 
 # Split the Atom when it Increases the "LIMIT"
@@ -180,7 +196,7 @@ def overFlow(cell, player):
     for cell_neighbor in cell.neighbors:
         cell_neighbor.add_atoms()
         cell_neighbor.color = player.color
-        if cell_neighbor.noAtoms >= len(cell_neighbor.neighbors):
+        if cell_neighbor.noAtoms >= cell_neighbor.type:
             cells.append(cell_neighbor)
 
     return cells
@@ -188,7 +204,7 @@ def overFlow(cell, player):
 
 # Checking if Any Player has WON!
 def isPlayerInGame():
-    print('remove')
+    # print('remove')
     global score
     playerScore = [0 for p in players]
     for row in range(rows):
@@ -204,8 +220,8 @@ def isPlayerInGame():
                 players[players[i].prev_player].next_player = players[i].next_player
             if players[players[i].prev_player] in players_playing:
                 players[players[i].next_player].prev_player = players[i].prev_player
-    print(players)
-    print(players_playing)
+    # print(players)
+    # print(players_playing)
 
     score = playerScore[:]
 
@@ -271,11 +287,11 @@ def gameLoop():
                 i = int(y_grid / cell_side)
                 j = int(x_grid / cell_side)
 
-                print(f'x: {x}, y: {y}')
-                print(f'x`: {x_grid}, y`: {y_grid}')
+                # print(f'x: {x}, y: {y}')
+                # print(f'x`: {x_grid}, y`: {y_grid}')
 
-                print(f'grid  :{grid.matrix[i][j].color}')
-                print(f'player:{players[currentPlayer].color}')
+                # print(f'grid  :{grid.matrix[i][j].color}')
+                # print(f'player:{players[currentPlayer].color}')
 
                 if grid.matrix[i][j].color == players[currentPlayer].color or grid.matrix[i][j].color == border:
 
@@ -286,7 +302,7 @@ def gameLoop():
                         isPlayerInGame()
                     currentPlayer = players[currentPlayer].next_player
 
-                print(f'cp: {currentPlayer}')
+                # print(f'cp: {currentPlayer}')
 
         display.fill(background)
 

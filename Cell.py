@@ -28,5 +28,5 @@ class Cell:
         self.type = type
 
     def add_atoms(self):
-        if self.noAtoms <= self.type + 1:
-            self.noAtoms += 1
+        # if self.noAtoms <= self.type + 1:
+        self.noAtoms += 1
