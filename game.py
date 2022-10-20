@@ -4,6 +4,9 @@ from queue import Queue
 import pygame
 import sys
 from math import *
+
+import pylab as p
+
 from Grid import Grid
 from Player import Player
 import copy
@@ -150,9 +153,11 @@ def addAtom(i, j, player):
     # grid_cpy = copy.deepcopy(grid)
     grid.matrix[i][j].add_atoms()
     grid.matrix[i][j].color = player.color
-    print(f'atoms add: {grid.matrix[i][j].noAtoms}')
+    print(f'atoms add[{i},{j}]: {grid.matrix[i][j].noAtoms}')
 
     if grid.matrix[i][j].noAtoms >= len(grid.matrix[i][j].neighbors):
+        print(f'cell lmt: {grid.matrix[i][j].type}')
+        print(grid.print_grid())
         if not overFlow_manager(grid.matrix[i][j], player):
             gameOver(player.id)
     showPresentGrid(grid)
@@ -174,6 +179,7 @@ def overFlow_manager(cell, player):
     # all_cells.add(cell)
     while not q.empty():
         print(f'atoms: {cell.noAtoms}')
+        print(f'queue: {queue_values(q)}')
         if check_inf_condition():
             return False
         # if len(all_cells) == rows * cols:
@@ -181,12 +187,27 @@ def overFlow_manager(cell, player):
         c = q.get()
         # all_cells.remove(c)
         cells = overFlow(c, player)
+        print(cells)
         if len(cells) > 0:
             for c in cells:
                 q.put(c)
                 # all_cells.add(c)
 
     return True
+
+
+def queue_values(q):
+    l = []
+    while not q.empty:
+        print("here")
+        a = q.get()
+        print(a)
+        l.append(a)
+
+    for i in l:
+        q.put(i)
+
+    return l
 
 
 # Split the Atom when it Increases the "LIMIT"
@@ -196,7 +217,8 @@ def overFlow(cell, player):
     for cell_neighbor in cell.neighbors:
         cell_neighbor.add_atoms()
         cell_neighbor.color = player.color
-        if cell_neighbor.noAtoms >= cell_neighbor.type:
+        if cell_neighbor.noAtoms > cell_neighbor.type:
+            print(cell_neighbor)
             cells.append(cell_neighbor)
 
     return cells

@@ -16,8 +16,8 @@ class Cell:
         self.vibrate_factor = 0.4  # default vibration factor for most of the internal cells
         self.type = CellType.INTERNAL
 
-    def __repr__(self):
-        return f'{self.noAtoms}'
+    # def __repr__(self):
+    #     return f'{self.noAtoms}'
 
     def vibrate(self):
         v = self.vibrate_factor
