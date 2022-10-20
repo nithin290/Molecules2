@@ -162,12 +162,11 @@ def addAtom(i, j, player):
     showPresentGrid(grid)
 
 
-def check_inf_condition():
+def check_inf_condition(player):
     # print(grid.print_grid())
-    color = grid.matrix[0][0]
     for row in grid.matrix:
         for col in row:
-            if not col.color == color:
+            if not col.color == player.color:
                 return False
     return True
 
@@ -180,7 +179,7 @@ def overFlow_manager(cell, player):
     while not q.empty():
         # print(f'atoms: {cell.noAtoms}')
         # print(f'queue: {queue_values(q)}')
-        if check_inf_condition():
+        if check_inf_condition(player):
             return False
         # if len(all_cells) == rows * cols:
         #     break
