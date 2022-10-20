@@ -156,14 +156,14 @@ def addAtom(i, j, player):
     print(f'atoms add[{i},{j}]: {grid.matrix[i][j].noAtoms}')
 
     if grid.matrix[i][j].noAtoms >= len(grid.matrix[i][j].neighbors):
-        print(f'cell lmt: {grid.matrix[i][j].type}')
-        print(grid.print_grid())
+        # print(f'cell lmt: {grid.matrix[i][j].type}')
         if not overFlow_manager(grid.matrix[i][j], player):
             gameOver(player.id)
     showPresentGrid(grid)
 
 
 def check_inf_condition():
+    # print(grid.print_grid())
     color = grid.matrix[0][0]
     for row in grid.matrix:
         for col in row:
@@ -178,8 +178,8 @@ def overFlow_manager(cell, player):
     q.put(cell)
     # all_cells.add(cell)
     while not q.empty():
-        print(f'atoms: {cell.noAtoms}')
-        print(f'queue: {queue_values(q)}')
+        # print(f'atoms: {cell.noAtoms}')
+        # print(f'queue: {queue_values(q)}')
         if check_inf_condition():
             return False
         # if len(all_cells) == rows * cols:
@@ -187,7 +187,7 @@ def overFlow_manager(cell, player):
         c = q.get()
         # all_cells.remove(c)
         cells = overFlow(c, player)
-        print(cells)
+        print(f'cells : {cells}')
         if len(cells) > 0:
             for c in cells:
                 q.put(c)
@@ -199,7 +199,6 @@ def overFlow_manager(cell, player):
 def queue_values(q):
     l = []
     while not q.empty:
-        print("here")
         a = q.get()
         print(a)
         l.append(a)

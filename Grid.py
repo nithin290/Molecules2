@@ -46,6 +46,6 @@ class Grid:
             # print(i)
             for j in range(self.cols):
                 # print(j)
-                print(self.matrix[i][j].type, end=" ")
+                print(self.matrix[i][j].color, end=" ")
             print()
         print()
