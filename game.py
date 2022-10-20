@@ -1,20 +1,23 @@
+import queue
+from queue import Queue
+
 import pygame
 import sys
 from math import *
 from Grid import Grid
 from Player import Player
+import copy
 
 # Initialization of Pygame
 pygame.init()
 
-width = 500
-height = 500
+grid_window_width = 400
+grid_window_height = 400
 
-window_width = max(300, width)
-window_height = max(400, width)
+cell_side = 100
 
-grid_window_width = window_width - 100
-grid_window_height = window_height - 200
+window_width = grid_window_width + 100
+window_height = grid_window_height + 200
 
 padding_v = 50
 padding_h = 50
@@ -31,14 +34,14 @@ violet = (0, 0, 255)
 yellow = (255, 255, 255)
 green = (0, 255, 0)
 
-players = [Player([255, 0, 0], "LynX"), Player([0, 0, 255], "Prometheus"), Player([0, 255, 0], "Green"), Player([255, 255, 255], "White")]
+players = [Player([255, 0, 0], "LynX"), Player([0, 0, 255], "Prometheus")]
 noPlayers = len(players)
 for i in range(noPlayers):
-    if i < noPlayers-1:
+    if i < noPlayers - 1:
         players[i].next_player = players[i + 1].id
     else:
         players[i].next_player = players[0].id
-for i in range(noPlayers-1, -1, -1):
+for i in range(noPlayers - 1, -1, -1):
     if i > 0:
         players[i].prev_player = players[i - 1].id
     else:
@@ -50,8 +53,6 @@ for player in players:
     players_playing.add(player)
 
 font = pygame.font.SysFont("Times New Roman", 30)
-
-cell_side = 50
 
 pygame.display.set_caption("Molecules %d Player" % noPlayers)
 
@@ -76,7 +77,7 @@ def initializeGrid():
     global grid, score, players
     score = [0 for _ in range(noPlayers)]
     grid = Grid(rows, cols)
-    print()
+    print(grid)
 
 
 # Draw the Grid in Pygame Window
@@ -106,7 +107,7 @@ def drawGrid(currentIndex):
 
 
 # Draw the Present Situation of Grid
-def showPresentGrid():
+def showPresentGrid(grid):
     r = -cell_side
     c = -cell_side
     padding = 2
@@ -144,22 +145,45 @@ def showPresentGrid():
 
 
 # Increase the Atom when Clicked
-def addAtom(i, j, color):
-    grid.matrix[i][j].noAtoms += 1
-    grid.matrix[i][j].color = color
+def addAtom(i, j, player):
+    global grid_cpy
+    grid_cpy = copy.deepcopy(grid)
+    grid.matrix[i][j].add_atoms()
+    grid.matrix[i][j].color = player.color
+
     if grid.matrix[i][j].noAtoms >= len(grid.matrix[i][j].neighbors):
-        overFlow(grid.matrix[i][j], color)
+        overFlow_manager(grid.matrix[i][j], player)
+    showPresentGrid(grid)
+
+
+def overFlow_manager(cell, player):
+    all_cells = set()
+    q = queue.Queue()
+    q.put(cell)
+    all_cells.add(cell)
+    while not q.empty():
+        if len(all_cells) == rows * cols:
+            break
+        c = q.get()
+        all_cells.remove(c)
+        cells = overFlow(c, player)
+        if len(cells) > 0:
+            for c in cells:
+                q.put(c)
+                all_cells.add(c)
 
 
 # Split the Atom when it Increases the "LIMIT"
-def overFlow(cell, color):
-    showPresentGrid()
+def overFlow(cell, player):
+    cells = []
     cell.noAtoms = 0
-    for m in range(len(cell.neighbors)):
-        cell.neighbors[m].noAtoms += 1
-        cell.neighbors[m].color = color
-        if cell.neighbors[m].noAtoms >= len(cell.neighbors[m].neighbors):
-            overFlow(cell.neighbors[m], color)
+    for cell_neighbor in cell.neighbors:
+        cell_neighbor.add_atoms()
+        cell_neighbor.color = player.color
+        if cell_neighbor.noAtoms >= len(cell_neighbor.neighbors):
+            cells.append(cell_neighbor)
+
+    return cells
 
 
 # Checking if Any Player has WON!
@@ -229,8 +253,6 @@ def gameLoop():
     turns = 0
     currentPlayer = 0
 
-
-
     while loop:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -259,7 +281,7 @@ def gameLoop():
 
                     turns += 1
 
-                    addAtom(i, j, players[currentPlayer].color)
+                    addAtom(i, j, players[currentPlayer])
                     if turns >= noPlayers:
                         isPlayerInGame()
                     currentPlayer = players[currentPlayer].next_player
@@ -269,7 +291,7 @@ def gameLoop():
         display.fill(background)
 
         drawGrid(currentPlayer)
-        showPresentGrid()
+        showPresentGrid(grid)
 
         pygame.display.update()
 
