@@ -147,7 +147,7 @@ def addAtom(i, j, player):
     # grid_cpy = copy.deepcopy(grid)
     grid.matrix[i][j].add_atoms()
     grid.matrix[i][j].color = player.color
-    print(f'addAtom: [{i},{j}]: {grid.matrix[i][j].noAtoms}')
+    # print(f'addAtom: [{i},{j}]: {grid.matrix[i][j].noAtoms}')
 
     if grid.matrix[i][j].noAtoms >= len(grid.matrix[i][j].neighbors):
         # print(f'cell lmt: {grid.matrix[i][j].type}')
@@ -180,7 +180,7 @@ def overFlow_manager(cell, player):
             return False
         c = q.get()
         cells = overFlow(c, player)
-        print(f'overflow_manager: cells : {cells}')
+        # print(f'overflow_manager: cells : {cells}')
         if len(cells) > 0:
             for c in cells:
                 q.put(c)
@@ -242,15 +242,17 @@ def gameOver(playerIndex):
                 close()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    close()
+                    main_menu()
                 if event.key == pygame.K_r:
                     gameLoop()
 
         text = font.render(f"{players[playerIndex].name} Won!", True, white)
         text2 = font.render("Press \'r\' to Reset!", True, white)
+        text3 = font.render("Press \'q\' to go to Main Menu", True, white)
 
         display.blit(text, (window_width / 3, window_height / 3))
         display.blit(text2, (window_width / 3, window_height / 2))
+        display.blit(text3, (window_width / 3, window_height / 1.5))
 
         pygame.display.update()
         clock.tick(60)
@@ -272,7 +274,7 @@ def checkWon():
 # Main Loop
 def gameLoop():
     initializeGrid()
-
+    pygame.display.set_caption('Molecules')
     loop = True
     turns = 0
     currentPlayer = 0
@@ -284,7 +286,7 @@ def gameLoop():
                 close()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    close()
+                    main_menu()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
                 if x < padding_h or y < padding_v or x > padding_h + grid_window_width or \
@@ -332,4 +334,98 @@ def gameLoop():
         clock.tick(20)
 
 
-gameLoop()
+mainClock = pygame.time.Clock()
+from pygame.locals import *
+
+pygame.init()
+pygame.display.set_caption('Molecules - Main Menu')
+screen = pygame.display.set_mode((window_width, window_height), 0, 32)
+
+# setting font settings
+# noinspection PyTypeChecker
+font = pygame.font.SysFont('Comic Sans MS', 20)
+font2 = pygame.font.SysFont('Comic Sans MS', 30)
+
+"""
+A function that can be used to write text on our screen and buttons
+"""
+
+
+def draw_text(text, font, color, surface, x, y):
+    textobj = font.render(text, 1, color)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+
+
+# A variable to check for the status later
+click = False
+
+
+# Main container function that holds the buttons and game functions
+def main_menu():
+    global click
+    while True:
+
+        screen.fill((133, 255, 255))
+        draw_text('Main Menu', font2, (255, 0, 0), screen, (window_width - 135)//2, (window_height - 270)//2)
+
+        mx, my = pygame.mouse.get_pos()
+
+        # creating buttons
+        button_1 = pygame.Rect(200, 100, 200, 50)
+        button_1.x = (window_width - 200)//2
+        button_1.y = (window_height - 100)//2
+        button_2 = pygame.Rect(200, 180, 200, 50)
+        button_2.x = (window_width - 200) // 2
+        button_2.y = (window_height - 100) // 2 + 100
+        # defining functions when a certain button is pressed
+        if button_1.collidepoint((mx, my)):
+            if click:
+                gameLoop()
+        if button_2.collidepoint((mx, my)):
+            if click:
+                options()
+        pygame.draw.rect(screen, (255, 0, 0), button_1)
+        pygame.draw.rect(screen, (255, 0, 0), button_2)
+
+        # writing text on top of button
+        draw_text('PLAY', font, (102, 255, 255), screen, (window_width - 100)//2 + 24, (window_height - 80)//2)
+        draw_text('OPTIONS', font, (102, 255, 255), screen, (window_width - 140)//2 + 24, (window_height + 120)//2)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+
+def options():
+    running = True
+    while running:
+        screen.fill((0, 0, 0))
+
+        draw_text('OPTIONS SCREEN', font, (255, 255, 255), screen, 20, 20)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+
+main_menu()
