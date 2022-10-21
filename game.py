@@ -1,3 +1,4 @@
+import copy
 import queue
 
 import pygame
@@ -34,17 +35,8 @@ yellow = (255, 255, 255)
 green = (0, 255, 0)
 
 players = [Player([255, 0, 0], "LynX"), Player([0, 0, 255], "Prometheus")]
+
 noPlayers = len(players)
-for i in range(noPlayers):
-    if i < noPlayers - 1:
-        players[i].next_player = players[i + 1].id
-    else:
-        players[i].next_player = players[0].id
-for i in range(noPlayers - 1, -1, -1):
-    if i > 0:
-        players[i].prev_player = players[i - 1].id
-    else:
-        players[i].prev_player = players[noPlayers - 1].id
 
 players_playing = set()
 for player in players:
@@ -73,6 +65,18 @@ def close():
 # Initializing the Grid with "Empty or 0"
 def initializeGrid():
     global grid, score, players
+
+    for i in range(noPlayers):
+        if i < noPlayers - 1:
+            players[i].next_player = players[i + 1].id
+        else:
+            players[i].next_player = players[0].id
+    for i in range(noPlayers - 1, -1, -1):
+        if i > 0:
+            players[i].prev_player = players[i - 1].id
+        else:
+            players[i].prev_player = players[noPlayers - 1].id
+
     score = [0 for _ in range(noPlayers)]
     grid = Grid(rows, cols)
 
@@ -236,12 +240,18 @@ def isPlayerInGame():
 
 # GAME OVER
 def gameOver(playerIndex):
+
+
+    global grid
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                del grid
                 close()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
+                    del grid
                     main_menu()
                 if event.key == pygame.K_r:
                     gameLoop()
@@ -273,7 +283,12 @@ def checkWon():
 
 # Main Loop
 def gameLoop():
+    global grid
     initializeGrid()
+
+    print(grid.print_grid())
+    print(f'noPlayers : {noPlayers}')
+
     pygame.display.set_caption('Molecules')
     loop = True
     turns = 0
@@ -301,8 +316,8 @@ def gameLoop():
                 # print(f'gameLoop: x: {x}, y: {y}')
                 # print(f'gameLoop: x`: {x_grid}, y`: {y_grid}')
 
-                # print(f'gameLoop: grid  :{grid.matrix[i][j].color}')
-                # print(f'gameLoop: player:{players[currentPlayer].color}')
+                print(f'gameLoop: grid  :{grid.matrix[i][j].color}')
+                print(f'gameLoop: player:{players[currentPlayer].color}')
 
                 if grid.matrix[i][j].color == players[currentPlayer].color or grid.matrix[i][j].color == border:
 
@@ -373,21 +388,23 @@ def main_menu():
         mx, my = pygame.mouse.get_pos()
 
         # creating buttons
-        button_1 = pygame.Rect(200, 100, 200, 50)
-        button_1.x = (window_width - 200)//2
-        button_1.y = (window_height - 100)//2
-        button_2 = pygame.Rect(200, 180, 200, 50)
-        button_2.x = (window_width - 200) // 2
-        button_2.y = (window_height - 100) // 2 + 100
+        button_play = pygame.Rect(200, 100, 200, 50)
+        button_play.x = (window_width - 200) // 2
+        button_play.y = (window_height - 100) // 2
+        button_options = pygame.Rect(200, 180, 200, 50)
+        button_options.x = (window_width - 200) // 2
+        button_options.y = (window_height - 100) // 2 + 100
+
         # defining functions when a certain button is pressed
-        if button_1.collidepoint((mx, my)):
+        if button_play.collidepoint((mx, my)):
             if click:
                 gameLoop()
-        if button_2.collidepoint((mx, my)):
+        if button_options.collidepoint((mx, my)):
             if click:
                 options()
-        pygame.draw.rect(screen, (255, 0, 0), button_1)
-        pygame.draw.rect(screen, (255, 0, 0), button_2)
+
+        pygame.draw.rect(screen, (255, 0, 0), button_play)
+        pygame.draw.rect(screen, (255, 0, 0), button_options)
 
         # writing text on top of button
         draw_text('PLAY', font, (102, 255, 255), screen, (window_width - 100)//2 + 24, (window_height - 80)//2)
