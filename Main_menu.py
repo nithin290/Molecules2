@@ -1,10 +1,10 @@
-from Menu import MenuState
+# from Menu import MenuState
 import pygame
 import sys
 from math import *
 
 
-class MainMenu(MenuState):
+class MainMenu(None):
 
     def __init__(self):
         pygame.init()
