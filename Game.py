@@ -2,6 +2,7 @@ import queue
 
 import pygame
 from pygame.locals import *
+import pygame_gui
 
 import sys
 from math import *
@@ -19,11 +20,13 @@ class Game:
 
         self.cell_side = 100
 
-        self.window_width = self.grid_window_width + 100
-        self.window_height = self.grid_window_height + 200
-
         self.padding_v = 50
         self.padding_h = 50
+
+        self.player_name_space = 100
+        self.pause_button_space = 0
+        self.window_width = self.grid_window_width + 100
+        self.window_height = self.grid_window_height + self.player_name_space + self.pause_button_space + 3 * self.padding_v
 
         self.grid = None
         self.score = None
@@ -61,6 +64,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.display = pygame.display.set_mode((self.window_width, self.window_height))
         self.font = pygame.font.SysFont("Times New Roman", 30)
+        self.font2 = pygame.font.SysFont("Comic Sans MS", 30)
 
     # Quit or Close the Game Window
     def close(self):
@@ -89,27 +93,48 @@ class Game:
         r = 0
         c = 0
         for i in range(self.grid_window_width // self.cell_side + 1):
-            pygame.draw.line(self.display, self.players[currentIndex].color, (self.padding_h + c, self.padding_v + 0),
-                             (self.padding_h + c, self.padding_v + self.grid_window_height))
+            pygame.draw.line(self.display, self.players[currentIndex].color,
+                             (self.padding_h + c, self.pause_button_space + 2 * self.padding_v + 0),
+                             (self.padding_h + c,
+                              2 * self.padding_v + self.pause_button_space + self.grid_window_height))
             c += self.cell_side
 
         for i in range(self.grid_window_height // self.cell_side + 1):
-            pygame.draw.line(self.display, self.players[currentIndex].color, (self.padding_h + 0, self.padding_v + r),
-                             (self.padding_h + self.grid_window_width, self.padding_v + r))
+            pygame.draw.line(self.display, self.players[currentIndex].color,
+                             (self.padding_h + 0, 2 * self.padding_v + self.pause_button_space + r),
+                             (
+                                 self.padding_h + self.grid_window_width,
+                                 2 * self.padding_v + self.pause_button_space + r))
             r += self.cell_side
 
         player_indicator_height = min(self.grid_window_height, 50)
         player_indicator_width = min(self.grid_window_width, 300)
         pygame.draw.rect(self.display, self.players[currentIndex].color,
                          (self.padding_h + (self.grid_window_width - player_indicator_width) / 2,
-                          self.padding_v * 2 + self.grid_window_height,
+                          self.pause_button_space + self.padding_v * 3 + self.grid_window_height,
                           player_indicator_width, player_indicator_height))
 
+        self.button_pause = pygame.Rect(0, 0, self.pause_button_space, self.pause_button_space)
+        self.button_pause.x = self.window_width - self.padding_h - self.pause_button_space
+        self.button_pause.y = self.padding_v
+        pygame.draw.rect(self.screen, self.players[currentIndex].color, self.button_pause)
+
+        pause_len = 2
+        pause1 = pygame.Rect(0, 0, self.pause_button_space // 5 - pause_len, self.pause_button_space // 2)
+        pause1.x = self.window_width - self.padding_h - self.pause_button_space + self.pause_button_space // 5 + pause_len + 2
+        pause1.y = self.padding_v + self.pause_button_space // 4
+        pygame.draw.rect(self.screen, [0, 0, 0], pause1)
+
+        pause2 = pygame.Rect(0, 0, self.pause_button_space // 5 - pause_len, self.pause_button_space // 2)
+        pause2.x = self.window_width - self.padding_h - self.pause_button_space + 3 * self.pause_button_space // 5 + pause_len - 2
+        pause2.y = self.padding_v + self.pause_button_space // 4
+        pygame.draw.rect(self.screen, [0, 0, 0], pause2)
+
         text = self.font.render(f"{self.players[currentIndex].name}'s turn", True, [0, 0, 0])
-        textRect = text.get_rect()
-        textRect.center = (
-        self.window_width // 2, self.padding_v * 2 + self.grid_window_height + player_indicator_height // 2)
-        self.display.blit(text, textRect)
+        text_rect = text.get_rect()
+        text_rect.center = (self.window_width // 2,
+                            self.pause_button_space + self.padding_v * 3 + self.grid_window_height + player_indicator_height // 2)
+        self.display.blit(text, text_rect)
 
     # Draw the Present Situation of Grid
     def showPresentGrid(self):
@@ -126,29 +151,31 @@ class Game:
                 elif self.grid.matrix[i][j].noAtoms == 1:
                     pygame.draw.ellipse(self.display, self.grid.matrix[i][j].color,
                                         (self.padding_h + c + self.cell_side / 2 - self.d / 2,
-                                         self.padding_v + r + self.cell_side / 2 - self.d / 2 + self.grid.matrix[i][
-                                             j].vibrate(), self.d, self.d))
+                                         self.pause_button_space + 2 * self.padding_v + r + self.cell_side / 2 - self.d / 2 +
+                                         self.grid.matrix[i][j].vibrate(), self.d, self.d))
                 elif self.grid.matrix[i][j].noAtoms == 2:
                     pygame.draw.ellipse(self.display, self.grid.matrix[i][j].color,
                                         (self.padding_h + c + self.cell_side / 2 - self.d / 2 - self.grid.matrix[i][
                                             j].vibrate(),
-                                         self.padding_v + r + 5, self.d, self.d))
+                                         self.pause_button_space + 2 * self.padding_v + r + 5, self.d, self.d))
                     pygame.draw.ellipse(self.display, self.grid.matrix[i][j].color,
                                         (self.padding_h + c + self.cell_side / 2 - self.d / 2,
-                                         self.padding_v + r + self.d / 2 + self.cell_side / 2 - self.d / 2 +
-                                         self.grid.matrix[i][
-                                             j].vibrate(), self.d, self.d))
+                                         self.pause_button_space + 2 * self.padding_v + r + self.d / 2 + self.cell_side / 2 - self.d / 2 +
+                                         self.grid.matrix[i][j].vibrate(), self.d, self.d))
                 elif self.grid.matrix[i][j].noAtoms == 3:
                     angle = 90
-                    y = self.padding_v + r + (self.d / 2) * cos(radians(angle)) + self.cell_side / 2 - self.d / 2
+                    y = self.pause_button_space + 2 * self.padding_v + r + (self.d / 2) * cos(
+                        radians(angle)) + self.cell_side / 2 - self.d / 2
                     x = self.padding_h + c + (self.d / 2) * sin(radians(angle)) + self.cell_side / 2 - self.d / 2
                     pygame.draw.ellipse(self.display, self.grid.matrix[i][j].color,
                                         (x - self.grid.matrix[i][j].vibrate(), y, self.d, self.d))
-                    y = self.padding_v + r + (self.d / 2) * cos(radians(angle + 90)) + self.cell_side / 2 - self.d / 2
+                    y = self.pause_button_space + 2 * self.padding_v + r + (self.d / 2) * cos(
+                        radians(angle + 90)) + self.cell_side / 2 - self.d / 2
                     x = self.padding_h + c + (self.d / 2) * sin(radians(angle + 90)) + 5
                     pygame.draw.ellipse(self.display, self.grid.matrix[i][j].color,
                                         (x + self.grid.matrix[i][j].vibrate(), y, self.d, self.d))
-                    y = self.padding_v + r + (self.d / 2) * cos(radians(angle - 90)) + self.cell_side / 2 - self.d / 2
+                    y = self.pause_button_space + 2 * self.padding_v + r + (self.d / 2) * cos(
+                        radians(angle - 90)) + self.cell_side / 2 - self.d / 2
                     x = self.padding_h + c + (self.d / 2) * sin(radians(angle - 90)) + 5
                     pygame.draw.ellipse(self.display, self.grid.matrix[i][j].color,
                                         (x - self.grid.matrix[i][j].vibrate(), y, self.d, self.d))
@@ -190,7 +217,7 @@ class Game:
             if self.check_inf_condition(player):
                 return False
             c = q.get()
-            cells = self.overFlow(c, player)
+            cells = self.overflow(c, player)
             # print(f'overflow_manager: cells : {cells}')
             if len(cells) > 0:
                 for c in cells:
@@ -209,7 +236,7 @@ class Game:
         return l
 
     # Split the Atom when it Increases the "LIMIT"
-    def overFlow(self, cell, player):
+    def overflow(self, cell, player):
         cells = []
         cell.noAtoms = 0
         for cell_neighbor in cell.neighbors:
@@ -300,11 +327,16 @@ class Game:
                         self.main_menu()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = pygame.mouse.get_pos()
-                    if x < self.padding_h or y < self.padding_v or x > self.padding_h + self.grid_window_width or \
-                            y > self.padding_v + self.grid_window_height:
+
+                    if self.button_pause.collidepoint((x, y)):
+                        if self.click:
+                            self = self.options(self)
+
+                    if x < self.padding_h or y < 2 * self.padding_v + self.pause_button_space or x > self.padding_h + self.grid_window_width or \
+                            y > 2 * self.padding_v + self.pause_button_space + self.grid_window_height:
                         break
                     x_grid = x - self.padding_h
-                    y_grid = y - self.padding_v
+                    y_grid = y - 2 * self.padding_v - self.pause_button_space
 
                     i = int(y_grid / self.cell_side)
                     j = int(x_grid / self.cell_side)
@@ -369,7 +401,7 @@ class Game:
         while True:
 
             self.screen.fill((133, 255, 255))
-            self.draw_text('Main Menu', self.font, (255, 0, 0), self.screen, (self.window_width - 135) // 2,
+            self.draw_text('Main Menu', self.font2, (255, 0, 0), self.screen, (self.window_width - 135) // 2,
                            (self.window_height - 270) // 2)
 
             mx, my = pygame.mouse.get_pos()
@@ -385,19 +417,21 @@ class Game:
             # defining functions when a certain button is pressed
             if button_play.collidepoint((mx, my)):
                 if self.click:
-                    self.gameLoop()
+                    self.options()
+                    # self.gameLoop()
             if button_options.collidepoint((mx, my)):
                 if self.click:
-                    self.options()
+                    pygame.quit()
+                    sys.exit()
 
             pygame.draw.rect(self.screen, (255, 0, 0), button_play)
             pygame.draw.rect(self.screen, (255, 0, 0), button_options)
 
             # writing text on top of button
-            self.draw_text('PLAY', self.font, (102, 255, 255), self.screen, (self.window_width - 100) // 2 + 24,
-                           (self.window_height - 80) // 2)
-            self.draw_text('OPTIONS', self.font, (102, 255, 255), self.screen, (self.window_width - 140) // 2 + 24,
-                           (self.window_height + 120) // 2)
+            self.draw_text('PLAY', self.font2, (102, 255, 255), self.screen, (self.window_width - 120) // 2 + 20,
+                           (self.window_height - 95) // 2)
+            self.draw_text('QUIT', self.font2, (102, 255, 255), self.screen, (self.window_width - 125) // 2 + 20,
+                           (self.window_height + 105) // 2)
 
             self.click = False
             for event in pygame.event.get():
@@ -413,24 +447,71 @@ class Game:
                         self.click = True
 
             pygame.display.update()
-            self.mainClock.tick(60)
 
     def options(self):
-        running = True
-        while running:
-            self.screen.fill((0, 0, 0))
+        pygame.init()
+        user_text = ''
 
-            self.draw_text('OPTIONS SCREEN', self.font, (255, 255, 255), self.screen, 20, 20)
+        color_active = pygame.Color('lightskyblue3')
+        color_passive = pygame.Color('chartreuse4')
+        color = color_passive
+
+        active = False
+        n = 2
+
+        input_rect = pygame.Rect(200, 200, 150, 50)
+        input_rect = pygame.Rect(200, 400, 150, 50)
+
+        while True:
             for event in pygame.event.get():
-                if event.type == QUIT:
+
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    print("Entered")
+                    break
+                elif event.type == pygame.KEYDOWN and event.type != pygame.K_RETURN:
+
+                    if event.key == pygame.K_BACKSPACE:
+
+                        user_text = user_text[:-1]
+                    else:
+                        user_text += event.unicode
+                elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        running = False
 
-            pygame.display.update()
-            self.mainClock.tick(60)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if input_rect.collidepoint(event.pos):
+                        active = True
+                    else:
+                        active = False
+
+                print(user_text)
+
+            self.screen.fill((133, 255, 255))
+
+            if active:
+                color = color_active
+            else:
+                color = color_passive
+
+            pygame.draw.rect(self.screen, color, input_rect)
+
+            text_surface = self.font2.render(user_text, True, (255, 255, 255))
+
+            # render at position stated in arguments
+            self.screen.blit(text_surface, (input_rect.x + 5, input_rect.y + 5))
+
+            # set width of textfield so that text cannot get
+            # outside of user's text input
+            input_rect.w = max(100, text_surface.get_width() + 10)
+
+            # display.flip() will update only a portion of the
+            # screen to updated, not full area
+            pygame.display.flip()
+
+            # clock.tick(60) means that for every second at most
+            # 60 frames should be passed.
+            self.clock.tick(60)
 
 
 game = Game()
