@@ -73,7 +73,10 @@ class Game:
         sys.exit()
 
     # Initializing the Grid with "Empty or 0"
-    def initializeGrid(self):
+    def initialize_grid(self):
+
+        self.cols = int(self.grid_window_width // self.cell_side)
+        self.rows = int(self.grid_window_height // self.cell_side)
 
         for i in range(self.no_Players):
             if i < self.no_Players - 1:
@@ -299,7 +302,7 @@ class Game:
 
     # Main Loop
     def game_loop(self):
-        self.initializeGrid()
+        self.initialize_grid()
 
         print(self.grid.print_grid())
         print(f'noPlayers : {len(self.players)}')
@@ -333,11 +336,11 @@ class Game:
                     i = int(y_grid / self.cell_side)
                     j = int(x_grid / self.cell_side)
 
-                    # print(f'gameLoop: x: {x}, y: {y}')
-                    # print(f'gameLoop: x`: {x_grid}, y`: {y_grid}')
-                    #
-                    # print(f'gameLoop: grid  :{self.grid.matrix[i][j].color}')
-                    # print(f'gameLoop: player:{self.players[current_player].color}')
+                    print(f'gameLoop: x: {x}, y: {y}')
+                    print(f'gameLoop: x`: {x_grid}, y`: {y_grid}')
+
+                    print(f'gameLoop: grid  :{self.grid.matrix[i][j].color}')
+                    print(f'gameLoop: player:{self.players[current_player].color}')
 
                     if self.grid.matrix[i][j].color == self.players[current_player].color or self.grid.matrix[i][
                         j].color == self.border:
