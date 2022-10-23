@@ -14,7 +14,7 @@ class Game:
 
     def __init__(self):
 
-        self.grid_window_width = 400
+        self.grid_window_width = 600
         self.grid_window_height = 400
 
         self.cell_side = 100
@@ -446,7 +446,7 @@ class Game:
         user_text_grid = ''
 
         color_active = pygame.Color('lightskyblue3')
-        color_passive = pygame.Color('chartreuse4')
+        color_passive = pygame.Color('lightskyblue2')
 
         active_players = False
         active_grid = False
@@ -454,8 +454,10 @@ class Game:
         color_player = color_passive
         color_grid = color_passive
 
-        input_rect_players = pygame.Rect(200, 200, 200, 50)
-        input_rect_grid = pygame.Rect(200, 400, 200, 50)
+        input_rect_players = pygame.Rect(250, 200, 200, 50)
+        input_rect_players_text = pygame.Rect(50, 200, 200, 50)
+        input_rect_grid = pygame.Rect(300, 300, 200, 50)
+        input_rect_grid_text = pygame.Rect(50, 300, 200, 50)
 
         while True:
             for event in pygame.event.get():
@@ -501,14 +503,20 @@ class Game:
                 color_grid = color_active
 
             pygame.draw.rect(self.screen, color_player, input_rect_players)
-            text_surface = self.font2.render(user_text_players, True, (255, 255, 255))
-            self.screen.blit(text_surface, (input_rect_players.x + 5, input_rect_players.y + 5))
-            input_rect_players.w = max(100, text_surface.get_width() + 10)
+            text_surface = self.font2.render(user_text_players, True, (0, 0, 0))
+            self.screen.blit(text_surface, (input_rect_players.x + 5, input_rect_players.y))
+            input_rect_players.w = max(50, text_surface.get_width() + 10)
+
+            text_surface = self.font2.render('players: ', True, (0, 0, 0))
+            self.screen.blit(text_surface, input_rect_players_text)
 
             pygame.draw.rect(self.screen, color_grid, input_rect_grid)
-            text_surface = self.font2.render(user_text_grid, True, (255, 255, 255))
-            self.screen.blit(text_surface, (input_rect_grid.x + 5, input_rect_grid.y + 5))
-            input_rect_grid.w = max(100, text_surface.get_width() + 10)
+            text_surface = self.font2.render(user_text_grid, True, (0, 0, 0))
+            self.screen.blit(text_surface, (input_rect_grid.x + 5, input_rect_grid.y))
+            input_rect_grid.w = max(50, text_surface.get_width() + 10)
+
+            text_surface = self.font2.render('grid-dimensions: ', True, (0, 0, 0))
+            self.screen.blit(text_surface, input_rect_grid_text)
 
             pygame.display.flip()
             self.clock.tick(60)
