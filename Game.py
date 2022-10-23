@@ -511,6 +511,9 @@ class Game:
                     elif input_rect_y.collidepoint(event.pos):
                         active_y = True
                     elif next_rect.collidepoint(event.pos):
+                        if user_text_players == '' or user_text_players.isspace() or user_text_x == '' or \
+                                user_text_x.isspace() or user_text_y == '' or user_text_y.isspace():
+                            continue
                         if not user_text_players.isdigit() or not user_text_x.isdigit() or not user_text_y.isdigit():
                             continue
                         self.no_Players = int(user_text_players)
