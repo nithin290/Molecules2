@@ -229,16 +229,6 @@ class Game:
 
         return True
 
-    def queue_values(q):
-        l = []
-        while not q.empty:
-            l.append(q.get())
-
-        for i in l:
-            q.put(i)
-
-        return l
-
     # Split the Atom when it Increases the "LIMIT"
     def overflow(self, cell, player):
         cells = []
