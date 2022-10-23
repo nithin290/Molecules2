@@ -443,21 +443,28 @@ class Game:
         pygame.init()
 
         user_text_players = ''
-        user_text_grid = ''
+        user_text_x = ''
+        user_text_y = ''
 
         color_active = pygame.Color('lightskyblue3')
         color_passive = pygame.Color('lightskyblue2')
 
         active_players = False
-        active_grid = False
+        active_x = False
+        active_y = False
 
         color_player = color_passive
-        color_grid = color_passive
-
-        input_rect_players = pygame.Rect(250, 200, 200, 50)
-        input_rect_players_text = pygame.Rect(50, 200, 200, 50)
-        input_rect_grid = pygame.Rect(300, 300, 200, 50)
-        input_rect_grid_text = pygame.Rect(50, 300, 200, 50)
+        color_x = color_passive
+        color_y = color_passive
+        print(self.window_width, self.window_height)
+        input_rect_players = pygame.Rect(2*self.window_width//3, self.window_height//5, self.window_width//20, self.window_height//20 + 10)
+        input_rect_players_text = pygame.Rect(self.window_width//3 - 50, self.window_height//5, self.window_width//5 + 50, self.window_height//13)
+        input_rect_x = pygame.Rect(2*self.window_width//3, self.window_height//5 + 75, self.window_width//20, self.window_height//20 + 10)
+        input_rect_x_text = pygame.Rect(self.window_width//3 - 50, self.window_height//5 + 75, self.window_width//5 + 50, self.window_height//13)
+        input_rect_y = pygame.Rect(2 * self.window_width // 3, self.window_height // 5 + 150, self.window_width // 20,
+                                   self.window_height // 20 + 10)
+        input_rect_y_text = pygame.Rect(self.window_width // 3 - 50, self.window_height // 5 + 150, self.window_width//5 + 50, self.window_height//13)
+        next_rect = pygame.Rect(self.window_width//2 - 100, self.window_height // 5 + 250, self.window_width//5 + 50, self.window_height//13)
 
         while True:
             for event in pygame.event.get():
@@ -465,9 +472,12 @@ class Game:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     if active_players:
                         active_players = False
-                        active_grid = True
-                    elif active_grid:
-                        active_grid = False
+                        active_x = True
+                    elif active_x:
+                        active_x = False
+                        active_y = True
+                    elif active_y:
+                        active_y = False
 
                 elif active_players and event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
@@ -475,11 +485,16 @@ class Game:
                     else:
                         user_text_players += event.unicode
 
-                elif active_grid and event.type == pygame.KEYDOWN:
+                elif active_x and event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
-                        user_text_grid = user_text_grid[:-1]
+                        user_text_x = user_text_x[:-1]
                     else:
-                        user_text_grid += event.unicode
+                        user_text_x += event.unicode
+                elif active_y and event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_BACKSPACE:
+                        user_text_y = user_text_y[:-1]
+                    else:
+                        user_text_y += event.unicode
 
                 elif event.type == pygame.QUIT:
                     pygame.quit()
@@ -487,37 +502,61 @@ class Game:
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     active_players = False
-                    active_grid = False
+                    active_x = False
+                    active_y = False
                     if input_rect_players.collidepoint(event.pos):
                         active_players = True
-                    elif input_rect_grid.collidepoint(event.pos):
-                        active_grid = True
+                    elif input_rect_x.collidepoint(event.pos):
+                        active_x = True
+                    elif input_rect_y.collidepoint(event.pos):
+                        active_y = True
+                    elif next_rect.collidepoint(event.pos):
+                        if not user_text_players.isdigit() or not user_text_x.isdigit() or not user_text_y.isdigit():
+                            continue
+                        self.no_Players = int(user_text_players)
+                        self.grid_window_width = (self.cell_side * (int(user_text_x)))
+                        self.grid_window_height = (self.cell_side * (int(user_text_y)))
+                        print('call options2(n)')
             self.screen.fill((133, 255, 255))
 
             color_player = color_passive
             if active_players:
                 color_player = color_active
 
-            color_grid = color_passive
-            if active_grid:
-                color_grid = color_active
+            color_x = color_passive
+            if active_x:
+                color_x = color_active
+
+            color_y = color_passive
+            if active_y:
+                color_y = color_active
 
             pygame.draw.rect(self.screen, color_player, input_rect_players)
             text_surface = self.font2.render(user_text_players, True, (0, 0, 0))
-            self.screen.blit(text_surface, (input_rect_players.x + 5, input_rect_players.y))
-            input_rect_players.w = max(50, text_surface.get_width() + 10)
+            self.screen.blit(text_surface, (input_rect_players.x + 8, input_rect_players.y))
+            # input_rect_players.w = max(50, text_surface.get_width() + 10)
 
-            text_surface = self.font2.render('players: ', True, (0, 0, 0))
+            text_surface = self.font2.render('Number of Players : ', True, (255, 0, 0))
             self.screen.blit(text_surface, input_rect_players_text)
 
-            pygame.draw.rect(self.screen, color_grid, input_rect_grid)
-            text_surface = self.font2.render(user_text_grid, True, (0, 0, 0))
-            self.screen.blit(text_surface, (input_rect_grid.x + 5, input_rect_grid.y))
-            input_rect_grid.w = max(50, text_surface.get_width() + 10)
+            text_surface = self.font2.render('X - Dimension : ', True, (255, 0, 0))
+            self.screen.blit(text_surface, input_rect_x_text)
 
-            text_surface = self.font2.render('grid-dimensions: ', True, (0, 0, 0))
-            self.screen.blit(text_surface, input_rect_grid_text)
+            pygame.draw.rect(self.screen, color_x, input_rect_x)
+            text_surface = self.font2.render(user_text_x, True, (0, 0, 0))
+            self.screen.blit(text_surface, (input_rect_x.x + 8, input_rect_x.y))
 
+            text_surface = self.font2.render('Y - Dimension : ', True, (255, 0, 0))
+            self.screen.blit(text_surface, input_rect_y_text)
+
+            pygame.draw.rect(self.screen, color_y, input_rect_y)
+            text_surface = self.font2.render(user_text_y, True, (0, 0, 0))
+            self.screen.blit(text_surface, (input_rect_y.x + 8, input_rect_y.y))
+
+            pygame.draw.rect(self.screen, (255, 0, 0), next_rect)
+            # self.draw_text('Next', self.font2, (133, 255, 255), self.screen, self.window_width//5 + 50 +
+            #                (self.window_width//5 + 50)//2, self.window_height//13 + (self.window_height//13)//2)
+            self.draw_text('Next', self.font2, (133, 255, 255), self.screen, next_rect.x + next_rect.w//2 - 35, next_rect.y + next_rect.h//2 - 20)
             pygame.display.flip()
             self.clock.tick(60)
 
