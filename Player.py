@@ -1,11 +1,9 @@
 class Player:
-    player_count = 0
 
-    def __init__(self, color=None, name=""):
+    def __init__(self, id=0, color=None, name=""):
         if color is None:
             color = [0, 0, 0]
-        self.id = Player.player_count
-        Player.player_count += 1
+        self.id = id
 
         self.color = color
         self.name = name

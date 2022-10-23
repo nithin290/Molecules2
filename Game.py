@@ -39,20 +39,19 @@ class Game:
         self.yellow = (255, 255, 255)
         self.green = (0, 255, 0)
 
-        self.players = [Player([255, 0, 0], "LynX"), Player([0, 0, 255], "Prometheus")]
-
+        self.players = [Player(0, [255, 0, 0], "LynX"), Player(1, [0, 0, 255], "Prometheus")]
         self.no_Players = len(self.players)
-
         self.players_playing = set()
         for player in self.players:
             self.players_playing.add(player)
-
         score = []
         for i in range(self.no_Players):
             score.append(0)
 
-        self.d = self.cell_side // 2 - 2
+        # self.players = None
+        # self.players.
 
+        self.d = self.cell_side // 2 - 2
         self.cols = int(self.grid_window_width // self.cell_side)
         self.rows = int(self.grid_window_height // self.cell_side)
 
@@ -89,9 +88,12 @@ class Game:
 
     # Draw the Grid in Pygame Window
     def drawGrid(self, currentIndex):
+
         r = 0
         c = 0
         for i in range(self.grid_window_width // self.cell_side + 1):
+            print(f'drawGrid: currentIndex: {currentIndex}')
+            print(f'drawGrid: players: {self.players}')
             pygame.draw.line(self.display, self.players[currentIndex].color,
                              (self.padding_h + c, self.pause_button_space + 2 * self.padding_v + 0),
                              (self.padding_h + c,
@@ -252,7 +254,7 @@ class Game:
         playerScore = [0 for p in self.players]
         for row in range(self.rows):
             for col in range(self.cols):
-                for k in range(self.no_Players):
+                for k in range(len(self.players)):
                     if self.grid.matrix[row][col].color == self.players[k].color:
                         # playerScore[k] += grid.matrix[row][col].noAtoms
                         playerScore[k] += 1
@@ -293,11 +295,11 @@ class Game:
 
     def checkWon(self):
         num = 0
-        for i in range(self.no_Players):
+        for i in range(len(self.players)):
             if self.score[i] == 0:
                 num += 1
-        if num == self.no_Players - 1:
-            for i in range(self.no_Players):
+        if num == len(self.players) - 1:
+            for i in range(len(self.players)):
                 if self.score[i]:
                     return i
 
@@ -308,7 +310,7 @@ class Game:
         self.initializeGrid()
 
         print(self.grid.print_grid())
-        print(f'noPlayers : {self.no_Players}')
+        print(f'noPlayers : {len(self.players)}')
 
         pygame.display.set_caption('Molecules')
         loop = True
@@ -339,11 +341,11 @@ class Game:
                     i = int(y_grid / self.cell_side)
                     j = int(x_grid / self.cell_side)
 
-                    print(f'gameLoop: x: {x}, y: {y}')
-                    print(f'gameLoop: x`: {x_grid}, y`: {y_grid}')
-
-                    print(f'gameLoop: grid  :{self.grid.matrix[i][j].color}')
-                    print(f'gameLoop: player:{self.players[current_player].color}')
+                    # print(f'gameLoop: x: {x}, y: {y}')
+                    # print(f'gameLoop: x`: {x_grid}, y`: {y_grid}')
+                    #
+                    # print(f'gameLoop: grid  :{self.grid.matrix[i][j].color}')
+                    # print(f'gameLoop: player:{self.players[current_player].color}')
 
                     if self.grid.matrix[i][j].color == self.players[current_player].color or self.grid.matrix[i][
                         j].color == self.border:
@@ -353,11 +355,11 @@ class Game:
                         add_successful = self.addAtom(i, j, self.players[current_player])
                         if not add_successful:
                             break
-                        if turns >= self.no_Players:
+                        if turns >= len(self.players):
                             self.isPlayerInGame()
                         current_player = self.players[current_player].next_player
 
-                    # print(f'gameLoop: cp: {currentPlayer}')
+                    print(f'gameLoop: cp: {current_player}')
 
             # redrawing the grid again
             self.display.fill(self.background)
@@ -519,7 +521,11 @@ class Game:
                         self.no_Players = int(user_text_players)
                         self.grid_window_width = (self.cell_side * (int(user_text_x)))
                         self.grid_window_height = (self.cell_side * (int(user_text_y)))
-                        print('call options2(n)')
+
+                        self.window_width = self.grid_window_width + 100
+                        self.window_height = self.grid_window_height + self.player_name_space + self.pause_button_space + 3 * self.padding_v
+
+                        self.options2(self.no_Players)
             self.screen.fill((133, 255, 255))
 
             color_player = color_passive
@@ -560,6 +566,134 @@ class Game:
             # self.draw_text('Next', self.font2, (133, 255, 255), self.screen, self.window_width//5 + 50 +
             #                (self.window_width//5 + 50)//2, self.window_height//13 + (self.window_height//13)//2)
             self.draw_text('Next', self.font2, (133, 255, 255), self.screen, next_rect.x + next_rect.w//2 - 35, next_rect.y + next_rect.h//2 - 20)
+            pygame.display.flip()
+            self.clock.tick(60)
+
+    def options2(self, n):
+        self.players = [Player() for _ in range(n)]
+
+        pygame.init()
+
+        user_names = ['' for player in self.players]
+        user_color = ['' for _ in self.players]
+
+        color_active = pygame.Color('lightskyblue3')
+        color_passive = pygame.Color('lightskyblue2')
+
+        active_players = [False for _ in self.players]
+        active_colors = [False for _ in self.players]
+
+        color_player = [color_passive for _ in self.players]
+        color_color = [color_passive for _ in self.players]
+
+        input_rect_players_name = []
+        input_rect_players_name_text = []
+        input_rect_players_color = []
+        input_rect_players_color_text = []
+
+        for i in range(n):
+            input_rect_players_name.append(pygame.Rect(200, 100 + 200 * i, 200, 50))
+            input_rect_players_name_text.append(pygame.Rect(50, 100 + 200 * i, 200, 50))
+            input_rect_players_color.append(pygame.Rect(200, 170 + 200 * i, 200, 50))
+            input_rect_players_color_text.append(pygame.Rect(50, 170 + 200 * i, 200, 50))
+
+        enter_button_dim_x = 200
+        enter_button_dim_y = 50
+        enter_button_pos_x = (self.window_width - enter_button_dim_x) // 2
+        enter_button_pos_y = 400
+        button_enter = pygame.Rect(enter_button_pos_x, enter_button_pos_y, enter_button_dim_x, enter_button_dim_y)
+
+        # button_enter.x = (self.window_width - 200) // 2
+        # button_enter.y = (self.window_height - 100) // 2
+
+        while True:
+            for event in pygame.event.get():
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mx, my = pygame.mouse.get_pos()
+                    if button_enter.collidepoint((mx, my)):
+
+                        for i in range(n):
+                            user_color[i] = user_color[i].strip().split(' ')
+                            temp = []
+                            for a in user_color[i]:
+                                color = int(a)
+                                temp.append(color)
+                            user_color[i] = temp
+
+                        self.players = []
+                        for i in range(n):
+                            self.players.append(Player(i, user_color[i], user_names[i]))
+
+                        print('click')
+
+                        self.display = pygame.display.set_mode((self.window_width, self.window_height))
+
+                        self.gameLoop()
+
+                for i in range(n):
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                        if active_players[i]:
+                            active_players[i] = False
+                            active_colors[i] = True
+                        elif active_colors[i]:
+                            active_colors[i] = False
+                            if i != n-1:
+                                active_players[i+1] = True
+
+                    elif active_players[i] and event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_BACKSPACE:
+                            user_names[i] = user_names[i][:-1]
+                        else:
+                            user_names[i] += event.unicode
+
+                    elif active_colors[i] and event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_BACKSPACE:
+                            user_color[i] = user_color[i][:-1]
+                        else:
+                            user_color[i] += event.unicode
+
+                    elif event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        active_players[i] = False
+                        active_colors[i] = False
+                        if input_rect_players_name[i].collidepoint(event.pos):
+                            active_players[i] = True
+                        elif input_rect_players_color[i].collidepoint(event.pos):
+                            active_colors[i] = True
+            self.screen.fill((133, 255, 255))
+
+            for i in range(n):
+                color_player[i] = color_passive
+                if active_players[i]:
+                    color_player[i] = color_active
+
+                color_color[i] = color_passive
+                if active_colors[i]:
+                    color_color[i] = color_active
+
+                text_surface = self.font2.render(user_names[i], True, (0, 0, 0))
+                input_rect_players_name[i].w = max(50, text_surface.get_width() + 10)
+                pygame.draw.rect(self.screen, color_player[i], input_rect_players_name[i])
+                self.screen.blit(text_surface, (input_rect_players_name[i].x + 5, input_rect_players_name[i].y))
+
+                text_surface = self.font2.render('player name: ', True, (0, 0, 0))
+                self.screen.blit(text_surface, input_rect_players_name_text[i])
+
+                text_surface = self.font2.render(user_color[i], True, (0, 0, 0))
+                input_rect_players_color[i].w = max(50, text_surface.get_width() + 10)
+                pygame.draw.rect(self.screen, color_color[i], input_rect_players_color[i])
+                self.screen.blit(text_surface, (input_rect_players_color[i].x + 5, input_rect_players_color[i].y))
+
+                text_surface = self.font2.render('player color: ', True, (0, 0, 0))
+                self.screen.blit(text_surface, input_rect_players_color_text[i])
+
+            pygame.draw.rect(self.screen, (255, 0, 0), button_enter)
+            self.draw_text('ENTER', self.font2, (0, 0, 0), self.screen, enter_button_pos_x, enter_button_pos_y)
+
             pygame.display.flip()
             self.clock.tick(60)
 
