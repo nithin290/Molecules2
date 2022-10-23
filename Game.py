@@ -2,7 +2,6 @@ import queue
 
 import pygame
 from pygame.locals import *
-import pygame_gui
 
 import sys
 from math import *
@@ -272,13 +271,12 @@ class Game:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    # TODO
-                    # del grid
                     self.close()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q:
                         # del grid
-                        self.main_menu()
+                        # self.main_menu()
+                        return
                     if event.key == pygame.K_r:
                         self.gameLoop()
 
@@ -368,30 +366,23 @@ class Game:
 
             if not add_successful:
                 self.gameOver(current_player)
+                return
 
             pygame.display.update()
 
             res = self.checkWon()
             if res < 9999:
                 self.gameOver(res)
+                return
 
             self.clock.tick(20)
 
         self.mainClock = pygame.time.Clock()
 
-        pygame.init()
-        pygame.display.set_caption('Molecules - Main Menu')
-        self.screen = pygame.display.set_mode((self.window_width, self.window_height), 0, 32)
-
-    """
-    A function that can be used to write text on our screen and buttons
-    """
-
     def draw_text(self, text, font, color, surface, x, y):
         text_obj = font.render(text, 1, color)
         text_rect = text_obj.get_rect()
-        text_rect.topleft = (x, y)
-        surface.blit(text_obj, text_rect)
+        surface.blit(text_obj, (x, y))
 
     # A variable to check for the status later
     click = False
@@ -512,6 +503,8 @@ class Game:
             # clock.tick(60) means that for every second at most
             # 60 frames should be passed.
             self.clock.tick(60)
+
+        return self
 
 
 game = Game()
