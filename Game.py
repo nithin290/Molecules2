@@ -328,7 +328,7 @@ class Game:
 
                     if self.button_pause.collidepoint((x, y)):
                         if self.click:
-                            self = self.options(self)
+                            self.close()
 
                     if x < self.padding_h or y < 2 * self.padding_v + self.pause_button_space or x > self.padding_h + self.grid_window_width or \
                             y > 2 * self.padding_v + self.pause_button_space + self.grid_window_height:
@@ -441,70 +441,77 @@ class Game:
 
     def options(self):
         pygame.init()
-        user_text = ''
+
+        user_text_players = ''
+        user_text_grid = ''
 
         color_active = pygame.Color('lightskyblue3')
         color_passive = pygame.Color('chartreuse4')
-        color = color_passive
 
-        active = False
-        n = 2
+        active_players = False
+        active_grid = False
 
-        input_rect = pygame.Rect(200, 200, 150, 50)
-        input_rect = pygame.Rect(200, 400, 150, 50)
+        color_player = color_passive
+        color_grid = color_passive
+
+        input_rect_players = pygame.Rect(200, 200, 200, 50)
+        input_rect_grid = pygame.Rect(200, 400, 200, 50)
 
         while True:
             for event in pygame.event.get():
 
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    print("Entered")
-                    break
-                elif event.type == pygame.KEYDOWN and event.type != pygame.K_RETURN:
+                    if active_players:
+                        active_players = False
+                        active_grid = True
+                    elif active_grid:
+                        active_grid = False
 
+                elif active_players and event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
-
-                        user_text = user_text[:-1]
+                        user_text_players = user_text_players[:-1]
                     else:
-                        user_text += event.unicode
+                        user_text_players += event.unicode
+
+                elif active_grid and event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_BACKSPACE:
+                        user_text_grid = user_text_grid[:-1]
+                    else:
+                        user_text_grid += event.unicode
+
                 elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if input_rect.collidepoint(event.pos):
-                        active = True
-                    else:
-                        active = False
-
-                print(user_text)
-
+                    active_players = False
+                    active_grid = False
+                    if input_rect_players.collidepoint(event.pos):
+                        active_players = True
+                    elif input_rect_grid.collidepoint(event.pos):
+                        active_grid = True
             self.screen.fill((133, 255, 255))
 
-            if active:
-                color = color_active
-            else:
-                color = color_passive
+            color_player = color_passive
+            if active_players:
+                color_player = color_active
 
-            pygame.draw.rect(self.screen, color, input_rect)
+            color_grid = color_passive
+            if active_grid:
+                color_grid = color_active
 
-            text_surface = self.font2.render(user_text, True, (255, 255, 255))
+            pygame.draw.rect(self.screen, color_player, input_rect_players)
+            text_surface = self.font2.render(user_text_players, True, (255, 255, 255))
+            self.screen.blit(text_surface, (input_rect_players.x + 5, input_rect_players.y + 5))
+            input_rect_players.w = max(100, text_surface.get_width() + 10)
 
-            # render at position stated in arguments
-            self.screen.blit(text_surface, (input_rect.x + 5, input_rect.y + 5))
+            pygame.draw.rect(self.screen, color_grid, input_rect_grid)
+            text_surface = self.font2.render(user_text_grid, True, (255, 255, 255))
+            self.screen.blit(text_surface, (input_rect_grid.x + 5, input_rect_grid.y + 5))
+            input_rect_grid.w = max(100, text_surface.get_width() + 10)
 
-            # set width of textfield so that text cannot get
-            # outside of user's text input
-            input_rect.w = max(100, text_surface.get_width() + 10)
-
-            # display.flip() will update only a portion of the
-            # screen to updated, not full area
             pygame.display.flip()
-
-            # clock.tick(60) means that for every second at most
-            # 60 frames should be passed.
             self.clock.tick(60)
-
-        return self
 
 
 game = Game()
