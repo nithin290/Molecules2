@@ -64,6 +64,9 @@ class Game:
         self.font = pygame.font.SysFont("Times New Roman", 30)
         self.font2 = pygame.font.SysFont("Comic Sans MS", 30)
 
+        self.menu_window_width = 700
+        self.menu_window_height = 650
+
     # Quit or Close the Game Window
     def close(self):
         pygame.quit()
@@ -87,7 +90,7 @@ class Game:
         self.grid = Grid(self.rows, self.cols)
 
     # Draw the Grid in Pygame Window
-    def drawGrid(self, currentIndex):
+    def draw_grid(self, currentIndex):
 
         r = 0
         c = 0
@@ -138,7 +141,7 @@ class Game:
         self.display.blit(text, text_rect)
 
     # Draw the Present Situation of Grid
-    def showPresentGrid(self):
+    def show_present_grid(self):
         r = -self.cell_side
         c = -self.cell_side
         padding = 2
@@ -184,7 +187,7 @@ class Game:
         pygame.display.update()
 
     # Increase the Atom when Clicked
-    def addAtom(self, i, j, player):
+    def add_atom(self, i, j, player):
         # grid_cpy = copy.deepcopy(grid)
         self.grid.matrix[i][j].add_atoms()
         self.grid.matrix[i][j].color = player.color
@@ -192,7 +195,7 @@ class Game:
 
         if self.grid.matrix[i][j].noAtoms >= len(self.grid.matrix[i][j].neighbors):
             # print(f'cell lmt: {self.grid.matrix[i][j].type}')
-            if not self.overFlow_manager(self.grid.matrix[i][j], player):
+            if not self.overflow_manager(self.grid.matrix[i][j], player):
 
                 self.grid = Grid(self.rows, self.cols)
                 for row in self.grid.matrix:
@@ -201,7 +204,7 @@ class Game:
                         col.color = player.color
                 return False
 
-        self.showPresentGrid()
+        self.show_present_grid()
         return True
 
     def check_inf_condition(self, player):
@@ -211,7 +214,7 @@ class Game:
                     return False
         return True
 
-    def overFlow_manager(self, cell, player):
+    def overflow_manager(self, cell, player):
         q = queue.Queue()
         q.put(cell)
         while not q.empty():
@@ -249,7 +252,7 @@ class Game:
         return cells
 
     # Checking if Any Player has WON!
-    def isPlayerInGame(self):
+    def is_player_in_game(self):
         # print(f'isPlayerInGame')
         playerScore = [0 for p in self.players]
         for row in range(self.rows):
@@ -269,18 +272,17 @@ class Game:
         self.score = playerScore[:]
 
     # GAME OVER
-    def gameOver(self, playerIndex):
+    def game_over(self, playerIndex):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.close()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q:
-                        # del grid
-                        # self.main_menu()
-                        return
+                        self.main_menu()
+                        # return
                     if event.key == pygame.K_r:
-                        self.gameLoop()
+                        self.game_loop()
 
             text = self.font.render(f"{self.players[playerIndex].name} Won!", True, self.white)
             text2 = self.font.render("Press \'r\' to Reset!", True, self.white)
@@ -293,7 +295,7 @@ class Game:
             pygame.display.update()
             self.clock.tick(60)
 
-    def checkWon(self):
+    def check_won(self):
         num = 0
         for i in range(len(self.players)):
             if self.score[i] == 0:
@@ -306,7 +308,7 @@ class Game:
         return 9999
 
     # Main Loop
-    def gameLoop(self):
+    def game_loop(self):
         self.initializeGrid()
 
         print(self.grid.print_grid())
@@ -352,29 +354,29 @@ class Game:
 
                         turns += 1
 
-                        add_successful = self.addAtom(i, j, self.players[current_player])
+                        add_successful = self.add_atom(i, j, self.players[current_player])
                         if not add_successful:
                             break
                         if turns >= len(self.players):
-                            self.isPlayerInGame()
+                            self.is_player_in_game()
                         current_player = self.players[current_player].next_player
 
                     print(f'gameLoop: cp: {current_player}')
 
             # redrawing the grid again
             self.display.fill(self.background)
-            self.drawGrid(current_player)
-            self.showPresentGrid()
+            self.draw_grid(current_player)
+            self.show_present_grid()
 
             if not add_successful:
-                self.gameOver(current_player)
+                self.game_over(current_player)
                 return
 
             pygame.display.update()
 
-            res = self.checkWon()
+            res = self.check_won()
             if res < 9999:
-                self.gameOver(res)
+                self.game_over(res)
                 return
 
             self.clock.tick(20)
@@ -391,6 +393,12 @@ class Game:
 
     # Main container function that holds the buttons and game functions
     def main_menu(self):
+
+        self.window_width = self.menu_window_width
+        self.window_height = self.menu_window_height
+
+        self.display = pygame.display.set_mode((self.window_width, self.window_height))
+
         while True:
 
             self.screen.fill((133, 255, 255))
@@ -442,6 +450,7 @@ class Game:
             pygame.display.update()
 
     def options(self):
+
         pygame.init()
 
         user_text_players = ''
@@ -570,6 +579,7 @@ class Game:
             self.clock.tick(60)
 
     def options2(self, n):
+
         self.players = [Player() for _ in range(n)]
 
         pygame.init()
@@ -591,20 +601,27 @@ class Game:
         input_rect_players_color = []
         input_rect_players_color_text = []
 
+        in_player_space = 170
+        right_shift = 330
+
         for i in range(n):
-            input_rect_players_name.append(pygame.Rect(200, 100 + 200 * i, 200, 50))
-            input_rect_players_name_text.append(pygame.Rect(50, 100 + 200 * i, 200, 50))
-            input_rect_players_color.append(pygame.Rect(200, 170 + 200 * i, 200, 50))
-            input_rect_players_color_text.append(pygame.Rect(50, 170 + 200 * i, 200, 50))
+            if i >= 3:
+                input_rect_players_color_text.append(pygame.Rect(50 + right_shift, 100 + in_player_space * (i - 3), 200, 50))
+                input_rect_players_name.append(pygame.Rect(250 + right_shift, 30 + in_player_space * (i - 3), 200, 50))
+                input_rect_players_name_text.append(pygame.Rect(50 + right_shift, 30 + in_player_space * (i - 3), 200, 50))
+                input_rect_players_color.append(pygame.Rect(250 + right_shift, 100 + in_player_space * (i - 3), 200, 50))
+            else:
+                input_rect_players_color_text.append(pygame.Rect(50, 100 + in_player_space * i, 200, 50))
+                input_rect_players_name.append(pygame.Rect(250, 30 + in_player_space * i, 200, 50))
+                input_rect_players_name_text.append(pygame.Rect(50, 30 + in_player_space * i, 200, 50))
+                input_rect_players_color.append(pygame.Rect(250, 100 + in_player_space * i, 200, 50))
+
 
         enter_button_dim_x = 200
         enter_button_dim_y = 50
-        enter_button_pos_x = (self.window_width - enter_button_dim_x) // 2
-        enter_button_pos_y = 400
+        enter_button_pos_x = (self.menu_window_width - enter_button_dim_x) // 2
+        enter_button_pos_y = 560
         button_enter = pygame.Rect(enter_button_pos_x, enter_button_pos_y, enter_button_dim_x, enter_button_dim_y)
-
-        # button_enter.x = (self.window_width - 200) // 2
-        # button_enter.y = (self.window_height - 100) // 2
 
         while True:
             for event in pygame.event.get():
@@ -629,7 +646,7 @@ class Game:
 
                         self.display = pygame.display.set_mode((self.window_width, self.window_height))
 
-                        self.gameLoop()
+                        self.game_loop()
 
                 for i in range(n):
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
@@ -680,7 +697,7 @@ class Game:
                 pygame.draw.rect(self.screen, color_player[i], input_rect_players_name[i])
                 self.screen.blit(text_surface, (input_rect_players_name[i].x + 5, input_rect_players_name[i].y))
 
-                text_surface = self.font2.render('player name: ', True, (0, 0, 0))
+                text_surface = self.font2.render('Player Name: ', True, (255, 0, 0))
                 self.screen.blit(text_surface, input_rect_players_name_text[i])
 
                 text_surface = self.font2.render(user_color[i], True, (0, 0, 0))
@@ -688,11 +705,11 @@ class Game:
                 pygame.draw.rect(self.screen, color_color[i], input_rect_players_color[i])
                 self.screen.blit(text_surface, (input_rect_players_color[i].x + 5, input_rect_players_color[i].y))
 
-                text_surface = self.font2.render('player color: ', True, (0, 0, 0))
+                text_surface = self.font2.render('Player Color: ', True, (255, 0, 0))
                 self.screen.blit(text_surface, input_rect_players_color_text[i])
 
             pygame.draw.rect(self.screen, (255, 0, 0), button_enter)
-            self.draw_text('ENTER', self.font2, (0, 0, 0), self.screen, enter_button_pos_x, enter_button_pos_y)
+            self.draw_text('ENTER', self.font2, (133, 255, 255), self.screen, enter_button_pos_x + 50, enter_button_pos_y)
 
             pygame.display.flip()
             self.clock.tick(60)
