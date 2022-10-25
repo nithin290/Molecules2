@@ -23,7 +23,7 @@ class Game:
         self.padding_h = 50
 
         self.player_name_space = 100
-        self.pause_button_space = 0
+        self.pause_button_space = 50
         self.window_width = self.grid_window_width + 100
         self.window_height = self.grid_window_height + self.player_name_space + self.pause_button_space + 3 * self.padding_v
 
@@ -42,14 +42,9 @@ class Game:
         self.players = [Player(0, [255, 0, 0], "LynX"), Player(1, [0, 0, 255], "Prometheus")]
         self.no_Players = len(self.players)
         self.players_playing = set()
-        for player in self.players:
-            self.players_playing.add(player)
         score = []
         for i in range(self.no_Players):
             score.append(0)
-
-        # self.players = None
-        # self.players.
 
         self.d = self.cell_side // 2 - 2
         self.cols = int(self.grid_window_width // self.cell_side)
@@ -92,14 +87,19 @@ class Game:
         self.score = [0 for _ in range(self.no_Players)]
         self.grid = Grid(self.rows, self.cols)
 
+        for player in self.players:
+            self.players_playing.add(player)
+
+        print(f'initialize_grid: players: {self.players}')
+
     # Draw the Grid in Pygame Window
     def draw_grid(self, currentIndex):
 
         r = 0
         c = 0
         for i in range(self.grid_window_width // self.cell_side + 1):
-            print(f'drawGrid: currentIndex: {currentIndex}')
-            print(f'drawGrid: players: {self.players}')
+            # print(f'drawGrid: currentIndex: {currentIndex}')
+            # print(f'drawGrid: players: {self.players}')
             pygame.draw.line(self.display, self.players[currentIndex].color,
                              (self.padding_h + c, self.pause_button_space + 2 * self.padding_v + 0),
                              (self.padding_h + c,
@@ -191,13 +191,12 @@ class Game:
 
     # Increase the Atom when Clicked
     def add_atom(self, i, j, player):
-        # grid_cpy = copy.deepcopy(grid)
         self.grid.matrix[i][j].add_atoms()
         self.grid.matrix[i][j].color = player.color
-        # print(f'addAtom: [{i},{j}]: {self.grid.matrix[i][j].noAtoms}')
+        print(f'addAtom: [{i},{j}]: {self.grid.matrix[i][j].noAtoms}')
 
         if self.grid.matrix[i][j].noAtoms >= len(self.grid.matrix[i][j].neighbors):
-            # print(f'cell lmt: {self.grid.matrix[i][j].type}')
+            print(f'cell lmt: {self.grid.matrix[i][j].type}')
             if not self.overflow_manager(self.grid.matrix[i][j], player):
 
                 self.grid = Grid(self.rows, self.cols)
@@ -225,7 +224,7 @@ class Game:
                 return False
             c = q.get()
             cells = self.overflow(c, player)
-            # print(f'overflow_manager: cells : {cells}')
+            print(f'overflow_manager: cells : {cells}')
             if len(cells) > 0:
                 for c in cells:
                     q.put(c)
@@ -246,7 +245,7 @@ class Game:
 
     # Checking if Any Player has WON!
     def is_player_in_game(self):
-        # print(f'isPlayerInGame')
+        print(f'isPlayerInGame')
         playerScore = [0 for p in self.players]
         for row in range(self.rows):
             for col in range(self.cols):
@@ -263,6 +262,7 @@ class Game:
                     self.players[self.players[i].next_player].prev_player = self.players[i].prev_player
 
         self.score = playerScore[:]
+        print(f'is_player_in_game: players: {self.players_playing}')
 
     # GAME OVER
     def game_over(self, playerIndex):
@@ -304,8 +304,9 @@ class Game:
     def game_loop(self):
         self.initialize_grid()
 
-        print(self.grid.print_grid())
-        print(f'noPlayers : {len(self.players)}')
+        print("Grid: ")
+        self.grid.print_grid()
+        print(f'\nnoPlayers : {len(self.players)}')
 
         pygame.display.set_caption('Molecules')
         loop = True
@@ -325,7 +326,7 @@ class Game:
 
                     if self.button_pause.collidepoint((x, y)):
                         if self.click:
-                            self.close()
+                            self.main_menu()
 
                     if x < self.padding_h or y < 2 * self.padding_v + self.pause_button_space or x > self.padding_h + self.grid_window_width or \
                             y > 2 * self.padding_v + self.pause_button_space + self.grid_window_height:
@@ -460,7 +461,7 @@ class Game:
         color_player = color_passive
         color_x = color_passive
         color_y = color_passive
-        print(self.window_width, self.window_height)
+        print(f'options: window dim: {self.window_width}, {self.window_height}')
         input_rect_players = pygame.Rect(2*self.window_width//3, self.window_height//5, self.window_width//20, self.window_height//20 + 10)
         input_rect_players_text = pygame.Rect(self.window_width//3 - 50, self.window_height//5, self.window_width//5 + 50, self.window_height//13)
         input_rect_x = pygame.Rect(2*self.window_width//3, self.window_height//5 + 75, self.window_width//20, self.window_height//20 + 10)
@@ -573,7 +574,8 @@ class Game:
 
     def options2(self, n):
 
-        self.players = [Player() for _ in range(n)]
+        self.players = [Player(_) for _ in range(n)]
+        print(f'options2: players: {self.players}')
 
         pygame.init()
 
@@ -634,8 +636,6 @@ class Game:
                         self.players = []
                         for i in range(n):
                             self.players.append(Player(i, user_color[i], user_names[i]))
-
-                        print('click')
 
                         self.display = pygame.display.set_mode((self.window_width, self.window_height))
 
