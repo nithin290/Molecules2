@@ -59,7 +59,7 @@ class Game:
         self.font = pygame.font.SysFont("Times New Roman", 30)
         self.font2 = pygame.font.SysFont("Comic Sans MS", 30)
 
-        self.menu_window_width = 700
+        self.menu_window_width = 860
         self.menu_window_height = 650
 
     # Quit or Close the Game Window
@@ -597,7 +597,7 @@ class Game:
         input_rect_players_color_text = []
 
         in_player_space = 170
-        right_shift = 330
+        right_shift = 390
 
         for i in range(n):
             if i >= 3:
