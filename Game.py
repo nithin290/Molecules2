@@ -1,3 +1,4 @@
+import copy
 import queue
 
 import pygame
@@ -61,6 +62,10 @@ class Game:
 
         self.menu_window_width = 860
         self.menu_window_height = 650
+
+        self.prev_state_grid = self.grid
+        self.prev_state_players_playing = self.players_playing
+        self.prev_player = 0
 
     # Quit or Close the Game Window
     def close(self):
@@ -192,6 +197,11 @@ class Game:
 
     # Increase the Atom when Clicked
     def add_atom(self, i, j, player):
+
+        self.prev_state_grid = copy.deepcopy(self.grid)
+        self.prev_state_players_playing = copy.deepcopy(self.players_playing)
+        self.prev_player = copy.deepcopy(player)
+
         self.grid.matrix[i][j].add_atoms()
         self.grid.matrix[i][j].color = player.color
         print(f'addAtom: [{i},{j}]: {self.grid.matrix[i][j].noAtoms}')
@@ -209,6 +219,16 @@ class Game:
 
         self.show_present_grid()
         return True
+
+    def undo(self):
+        print(f'undo: pressed')
+        self.grid = self.prev_state_grid
+        self.players_playing = self.prev_state_players_playing
+        self.show_present_grid()
+        self.draw_grid(self.prev_player.id)
+        print(f'undo: grid: {self.grid.print_grid()}')
+
+        return self.prev_player.id
 
     def check_inf_condition(self, player):
         for row in self.grid.matrix:
@@ -322,6 +342,8 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
                         self.main_menu()
+                    if event.key == pygame.K_z:
+                        current_player = self.undo()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = pygame.mouse.get_pos()
 
@@ -651,8 +673,9 @@ class Game:
                             user_color[i] = user_color[i].strip().split(' ')
                             temp = []
                             for a in user_color[i]:
-                                color = int(a)
-                                temp.append(color)
+                                if a.isnumeric():
+                                    color = int(a)
+                                    temp.append(color)
                             user_color[i] = temp
 
                         self.players = []
