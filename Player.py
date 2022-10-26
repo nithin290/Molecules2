@@ -11,5 +11,5 @@ class Player:
         self.prev_player = -1
 
     def __repr__(self):
-        return f'{self.next_player}:{self.prev_player}'
+        return f'{self.id}:{self.next_player}:{self.prev_player}'
         # return self.name

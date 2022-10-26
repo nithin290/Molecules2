@@ -320,7 +320,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.close()
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q:
+                    if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
                         self.main_menu()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = pygame.mouse.get_pos()
