@@ -88,7 +88,8 @@ class Game:
         self.grid = Grid(self.rows, self.cols)
 
         for player in self.players:
-            self.players_playing.add(player)
+            if player not in self.players_playing:
+                self.players_playing.add(player)
 
         print(f'initialize_grid: players: {self.players}')
 
@@ -388,6 +389,8 @@ class Game:
     # Main container function that holds the buttons and game functions
     def main_menu(self):
 
+        print(f'main_menu: ')
+
         self.window_width = self.menu_window_width
         self.window_height = self.menu_window_height
 
@@ -471,9 +474,16 @@ class Game:
         input_rect_y_text = pygame.Rect(self.window_width // 3 - 50, self.window_height // 5 + 150, self.window_width//5 + 50, self.window_height//13)
         next_rect = pygame.Rect(self.window_width//2 - 100, self.window_height // 5 + 250, self.window_width//5 + 50, self.window_height//13)
 
+        esc_button_pressed = False
         while True:
-            for event in pygame.event.get():
 
+            for event in pygame.event.get():
+                # print(f'{pygame.event.get()}')
+
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    # print("options: esc pressed")
+                    esc_button_pressed = True
+                    break
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     if active_players:
                         active_players = False
@@ -572,6 +582,12 @@ class Game:
             pygame.display.flip()
             self.clock.tick(60)
 
+            if esc_button_pressed:
+                break
+
+        if esc_button_pressed:
+            self.main_menu()
+
     def options2(self, n):
 
         self.players = [Player(_) for _ in range(n)]
@@ -618,8 +634,14 @@ class Game:
         enter_button_pos_y = 560
         button_enter = pygame.Rect(enter_button_pos_x, enter_button_pos_y, enter_button_dim_x, enter_button_dim_y)
 
+        esc_button_pressed = False
+
         while True:
             for event in pygame.event.get():
+
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    esc_button_pressed = True
+                    break
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mx, my = pygame.mouse.get_pos()
@@ -706,6 +728,12 @@ class Game:
 
             pygame.display.flip()
             self.clock.tick(60)
+
+            if esc_button_pressed:
+                break
+
+        if esc_button_pressed:
+            self.main_menu()
 
 
 game = Game()
